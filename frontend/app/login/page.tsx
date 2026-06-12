@@ -241,7 +241,7 @@ export default function LoginPage() {
           </button>
 
           <p className="text-center text-xs mt-5" style={{ color: C.textMuted }}>
-            Canton Sandbox · localhost:7575 · No real assets
+            Demo environment · Canton Sandbox · No real assets
           </p>
         </div>
       </div>

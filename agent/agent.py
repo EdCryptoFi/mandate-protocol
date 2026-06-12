@@ -34,10 +34,21 @@ MOCK_PRICES = {
     "Commodity": 85.0,
 }
 
+# Template IDs in JSON API v1 "<module>:<entity>" form — must match the
+# Daml module names exactly (see daml/daml/*.daml).
 TEMPLATE = {
-    "session":  "MandateProtocol.InstitutionMandate:AgentSession",
-    "pool":     "MandateProtocol.CollateralPool:CollateralPool",
-    "margin":   "MandateProtocol.CollateralPool:MarginCall",
+    "session":  "InstitutionMandate:AgentSession",
+    "pool":     "CollateralPool:CollateralPool",
+    "margin":   "CollateralPool:MarginCall",
+}
+
+# Map agent decisions to the Daml ActionType enum constructors (Types.daml)
+ACTION_TYPE = {
+    AgentDecision.REBALANCE:           "Rebalance",
+    AgentDecision.POST_COLLATERAL:     "CollateralPost",
+    AgentDecision.RESPOND_MARGIN_CALL: "MarginCallResponse",
+    AgentDecision.CONFIRM_SETTLEMENT:  "SettlementConfirm",
+    AgentDecision.ESCALATE_HUMAN:      "HumanEscalation",
 }
 
 
@@ -188,7 +199,7 @@ class MandateAgent:
                 "reason": result.rationale,
                 "proposedAmount": result.amount,
                 "proposedAsset": result.asset,
-                "proposedAction": result.decision.value.title(),
+                "proposedAction": ACTION_TYPE.get(result.decision, "HumanEscalation"),
             }
         )
         console.print("[yellow]✓ Escalation request submitted to treasury manager[/yellow]")

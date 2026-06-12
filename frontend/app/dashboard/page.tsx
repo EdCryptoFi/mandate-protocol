@@ -101,14 +101,34 @@ const VOLUME_DATA = [
 ];
 
 /* ── Sidebar ── */
-const NAV_ITEMS = [
-  { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { id: "sessions",  icon: Key,             label: "Agent Sessions" },
-  { id: "pool",      icon: Layers,          label: "Collateral Pool" },
-  { id: "margin",    icon: Bell,            label: "Margin Calls", badge: "2", badgeColor: C.amber },
-  { id: "log",       icon: FileText,        label: "Action Log" },
-  { id: "settings",  icon: Settings,        label: "Settings" },
-];
+const NAV_BY_ROLE: Record<string, { id: string; icon: React.ElementType; label: string; badge?: string }[]> = {
+  treasury: [
+    { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { id: "sessions",  icon: Key,             label: "Agent Sessions" },
+    { id: "pool",      icon: Layers,          label: "Collateral Pool" },
+    { id: "margin",    icon: Bell,            label: "Margin Calls", badge: "2" },
+    { id: "log",       icon: FileText,        label: "Action Log" },
+    { id: "settings",  icon: Settings,        label: "Settings" },
+  ],
+  compliance: [
+    { id: "dashboard", icon: LayoutDashboard, label: "Overview" },
+    { id: "log",       icon: FileText,        label: "Audit Log" },
+    { id: "settings",  icon: Settings,        label: "Controls" },
+  ],
+  regulator: [
+    { id: "dashboard", icon: LayoutDashboard, label: "Overview" },
+    { id: "log",       icon: FileText,        label: "Agent Actions" },
+  ],
+};
+
+const SECTION_TITLES: Record<string, { title: string; sub: string }> = {
+  dashboard: { title: "Dashboard",        sub: "Live agent activity and session limits" },
+  sessions:  { title: "Agent Sessions",   sub: "Active session token, limits and usage" },
+  pool:      { title: "Collateral Pool",  sub: "Holdings, allocation and volume" },
+  margin:    { title: "Margin Calls",     sub: "Open calls and automated responses" },
+  log:       { title: "Action Log",       sub: "Immutable on-chain record of every AI decision" },
+  settings:  { title: "Settings",         sub: "Session configuration and agent controls" },
+};
 
 /* ── Sub-components ── */
 
@@ -247,7 +267,7 @@ function Sidebar({ role, institution, activeTab, onTabChange }: {
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        {NAV_ITEMS.map(item => {
+        {(NAV_BY_ROLE[role] ?? NAV_BY_ROLE.treasury).map(item => {
           const active = activeTab === item.id;
           return (
             <button
@@ -339,9 +359,16 @@ function SimBanner({ state, dots }: { state: string; dots: string }) {
 
 /* ── Tab content ── */
 
+/* Open margin calls (mock — mirrors badge count in sidebar) */
+const OPEN_MARGIN_CALLS = [
+  { callId: "MC-2026-0048", from: "Bank B",             amount: 120_000, asset: "Cash",     deadline: "16:00 UTC", penalty: 14_000 },
+  { callId: "MC-2026-0051", from: "Clearinghouse Gamma", amount: 95_000,  asset: "Treasury", deadline: "18:30 UTC", penalty: 9_500 },
+];
+
 function TreasuryTab({
-  actions, simState, reasoningDots, paused, onSimulate, onPause,
+  section, actions, simState, reasoningDots, paused, onSimulate, onPause,
 }: {
+  section: string;
   actions: AgentAction[];
   simState: string;
   reasoningDots: string;
@@ -350,10 +377,13 @@ function TreasuryTab({
   onPause: () => void;
 }) {
   const volPct = ((MOCK_SESSION.volumeUsedTodayUSD / MOCK_SESSION.maxDailyVolumeUSD) * 100);
+  const show = (ids: string[]) => ids.includes(section);
+  const feedActions = section === "margin" ? actions.filter(a => a.actionType === "MarginCallResponse") : actions;
 
   return (
     <div className="space-y-5">
       {/* Stat tiles */}
+      {show(["dashboard", "pool"]) && (
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <StatTile
           label="Pool Value"
@@ -383,8 +413,10 @@ function TreasuryTab({
           icon={Bell}
         />
       </div>
+      )}
 
       {/* Session card */}
+      {show(["dashboard", "sessions"]) && (
       <div className="rounded-xl p-5" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
@@ -440,8 +472,39 @@ function TreasuryTab({
           </div>
         </div>
       </div>
+      )}
+
+      {/* Open margin calls panel */}
+      {show(["margin"]) && (
+      <div className="rounded-xl p-5" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: C.textMuted }}>Open Margin Calls</h3>
+          <button
+            onClick={onSimulate}
+            disabled={simState !== "idle" || paused}
+            className="text-xs px-3 py-2 rounded-lg border transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ borderColor: `${C.amber}60`, color: C.amber }}
+          >
+            ⚡ Simulate Margin Call
+          </button>
+        </div>
+        <div className="space-y-3">
+          {OPEN_MARGIN_CALLS.map(mc => (
+            <div key={mc.callId} className="flex items-center gap-4 p-4 rounded-lg flex-wrap" style={{ background: C.elevated, border: `1px solid ${C.border}` }}>
+              <span className="font-mono text-xs" style={{ color: C.amber }}>{mc.callId}</span>
+              <span className="text-sm font-medium" style={{ color: C.textPri }}>{mc.from}</span>
+              <span className="text-sm font-mono" style={{ color: C.textPri }}>${mc.amount.toLocaleString()} {mc.asset}</span>
+              <span className="text-xs" style={{ color: C.textSec }}>Deadline {mc.deadline}</span>
+              <span className="text-xs" style={{ color: C.red }}>Penalty ${mc.penalty.toLocaleString()}</span>
+              <span className="ml-auto"><Badge text="AWAITING AGENT" color="amber" /></span>
+            </div>
+          ))}
+        </div>
+      </div>
+      )}
 
       {/* Charts row */}
+      {show(["dashboard", "pool"]) && (
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
         {/* Allocation */}
         <div className="lg:col-span-2 rounded-xl p-5" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
@@ -493,8 +556,10 @@ function TreasuryTab({
           </ResponsiveContainer>
         </div>
       </div>
+      )}
 
       {/* Limits */}
+      {show(["dashboard", "sessions"]) && (
       <div className="rounded-xl p-5" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
         <h3 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: C.textMuted }}>Session Limit Usage</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -503,35 +568,97 @@ function TreasuryTab({
           <LimitRow label="Single Action Cap" used={0} max={MOCK_SESSION.maxSingleActionUSD} />
         </div>
       </div>
+      )}
+
+      {/* Settings */}
+      {show(["settings"]) && (
+      <>
+        <div className="rounded-xl p-5" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
+          <h3 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: C.textMuted }}>Session Configuration</h3>
+          <div className="grid sm:grid-cols-2 gap-x-8 gap-y-0">
+            {[
+              ["Session ID", MOCK_SESSION.sessionId],
+              ["Valid for", `${MOCK_SESSION.validForHours} hours`],
+              ["Max single action", `$${MOCK_SESSION.maxSingleActionUSD.toLocaleString()}`],
+              ["Max daily volume", `$${MOCK_SESSION.maxDailyVolumeUSD.toLocaleString()}`],
+              ["Margin call limit", `$${MOCK_SESSION.marginCallResponseLimitUSD.toLocaleString()}`],
+              ["Permitted choices", MOCK_SESSION.permittedChoices.join(", ")],
+            ].map(([k, v]) => (
+              <div key={k} className="flex justify-between items-center py-3 gap-4" style={{ borderBottom: `1px solid ${C.border}` }}>
+                <span className="text-sm shrink-0" style={{ color: C.textSec }}>{k}</span>
+                <span className="text-sm font-mono font-medium text-right" style={{ color: C.textPri }}>{v}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs mt-4" style={{ color: C.textMuted }}>
+            Limits are enforced by the AgentSession Daml contract. Changing them requires the Treasury Manager
+            to revoke this session and issue a new one — values here are read-only by design.
+          </p>
+        </div>
+        <div className="rounded-xl p-4 flex items-center justify-between gap-4" style={{ background: C.amberLow, border: `1px solid ${C.amber}30` }}>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: C.amber }}>Agent Execution</p>
+            <p className="text-xs mt-0.5" style={{ color: C.textSec }}>
+              {paused ? "Agent is paused — no new actions will be submitted." : "Agent is active and polling the ledger."}
+            </p>
+          </div>
+          <button
+            onClick={onPause}
+            className="text-xs px-4 py-2 rounded-lg font-medium shrink-0 border transition-opacity hover:opacity-80"
+            style={{ borderColor: paused ? `${C.green}60` : `${C.amber}60`, color: paused ? C.green : C.amber }}
+          >
+            {paused ? "Resume Agent" : "Pause Agent"}
+          </button>
+        </div>
+      </>
+      )}
 
       {/* Sim banner */}
-      <SimBanner state={simState} dots={reasoningDots} />
+      {show(["dashboard", "margin"]) && <SimBanner state={simState} dots={reasoningDots} />}
 
       {/* Action feed */}
+      {show(["dashboard", "margin", "log"]) && (
       <div className="rounded-xl p-5" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: C.textMuted }}>Agent Activity Feed</h3>
+          <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: C.textMuted }}>
+            {section === "margin" ? "Margin Call Responses" : "Agent Activity Feed"}
+          </h3>
           <span className="text-xs" style={{ color: C.textMuted }}>Click row to expand AI rationale</span>
         </div>
         <div className="space-y-2">
-          {actions.map(a => <ActionRow key={a.actionId} action={a} />)}
+          {feedActions.map(a => <ActionRow key={a.actionId} action={a} />)}
         </div>
       </div>
+      )}
     </div>
   );
 }
 
-function ComplianceTab() {
+function ComplianceTab({ section, halted, onHalt }: { section: string; halted: boolean; onHalt: () => void }) {
+  const show = (ids: string[]) => ids.includes(section);
   return (
     <div className="space-y-5">
+      {halted && (
+        <div className="flex items-center gap-3 p-4 rounded-xl" style={{ background: C.redLow, border: `1px solid ${C.red}40` }}>
+          <AlertTriangle size={16} color={C.red} />
+          <div>
+            <p className="text-sm font-semibold" style={{ color: C.red }}>Agent Halted — AgentSession invalidated</p>
+            <p className="text-xs mt-0.5" style={{ color: C.textSec }}>EmergencyPause record created on-chain. CEO + CFO co-signature required to issue a new session.</p>
+          </div>
+        </div>
+      )}
+
       {/* Stats */}
+      {show(["dashboard"]) && (
       <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
         <StatTile label="Daily Cap Usage"    value="21.5%"  sub="$430K of $2M"        subColor={C.green}  icon={Activity} />
         <StatTile label="Limit Violations"   value="0"      sub="All checks passed"    subColor={C.green}  icon={CheckCircle} />
         <StatTile label="Human Escalations"  value="0"      sub="Today"                                    icon={Users} />
       </div>
+      )}
 
       {/* Limit usage detail */}
+      {show(["dashboard"]) && (
       <div className="rounded-xl p-5" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
         <h3 className="text-xs font-semibold uppercase tracking-wider mb-5" style={{ color: C.textMuted }}>Limit Utilization</h3>
         <div className="grid sm:grid-cols-3 gap-6">
@@ -553,8 +680,10 @@ function ComplianceTab() {
           ))}
         </div>
       </div>
+      )}
 
       {/* Mandate parameters */}
+      {show(["dashboard"]) && (
       <div className="rounded-xl p-5" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
         <h3 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: C.textMuted }}>Operational Mandate Parameters</h3>
         <div className="grid sm:grid-cols-2 gap-x-8 gap-y-0">
@@ -575,8 +704,10 @@ function ComplianceTab() {
           ))}
         </div>
       </div>
+      )}
 
       {/* Audit log excerpt */}
+      {show(["dashboard", "log"]) && (
       <div className="rounded-xl p-5" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
         <h3 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: C.textMuted }}>Agent Action Log — Immutable On-Chain Record</h3>
         <div className="space-y-3">
@@ -602,23 +733,30 @@ function ComplianceTab() {
           ))}
         </div>
       </div>
+      )}
 
       {/* Emergency */}
+      {show(["dashboard", "settings"]) && (
       <div className="rounded-xl p-4 flex items-center justify-between gap-4" style={{ background: C.redLow, border: `1px solid ${C.red}30` }}>
         <div>
           <p className="text-sm font-semibold" style={{ color: C.red }}>Emergency Pause</p>
           <p className="text-xs mt-0.5" style={{ color: C.textSec }}>Immediately invalidates the active AgentSession. Requires CEO + CFO co-signature to resume.</p>
         </div>
-        <button className="text-xs px-4 py-2 rounded-lg font-medium shrink-0 transition-opacity hover:opacity-80"
+        <button
+          onClick={onHalt}
+          disabled={halted}
+          className="text-xs px-4 py-2 rounded-lg font-medium shrink-0 transition-opacity hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ border: `1px solid ${C.red}60`, color: C.red }}>
-          Halt Agent
+          {halted ? "Agent Halted" : "Halt Agent"}
         </button>
       </div>
+      )}
     </div>
   );
 }
 
-function RegulatorTab() {
+function RegulatorTab({ section }: { section: string }) {
+  const show = (ids: string[]) => ids.includes(section);
   return (
     <div className="space-y-5">
       {/* Banner */}
@@ -631,14 +769,17 @@ function RegulatorTab() {
       </div>
 
       {/* Cross-institution stats */}
+      {show(["dashboard"]) && (
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <StatTile label="Total Actions"    value="847"    sub="Last 30 days"           icon={Activity} />
         <StatTile label="Total Volume"     value="$124.6M" sub="Across institutions"   icon={TrendingUp} />
         <StatTile label="Escalations"      value="3"      sub="Required human approval" subColor={C.amber} icon={AlertTriangle} />
         <StatTile label="Limit Breaches"   value="0"      sub="Zero violations"         subColor={C.green} icon={CheckCircle} />
       </div>
+      )}
 
       {/* Settlement activity */}
+      {show(["dashboard"]) && (
       <div className="rounded-xl p-5" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
         <h3 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: C.textMuted }}>Cross-Institution Settlements</h3>
         <div className="space-y-3">
@@ -660,8 +801,10 @@ function RegulatorTab() {
           ))}
         </div>
       </div>
+      )}
 
       {/* Full audit log */}
+      {show(["dashboard", "log"]) && (
       <div className="rounded-xl p-5" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
         <h3 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: C.textMuted }}>All Agent Actions — Cross-Institution</h3>
         <div className="space-y-3">
@@ -695,6 +838,7 @@ function RegulatorTab() {
           ))}
         </div>
       </div>
+      )}
 
       {/* Privacy note */}
       <div className="rounded-xl p-4" style={{ background: C.surface, borderLeft: `3px solid ${C.accent}`, border: `1px solid ${C.border}` }}>
@@ -726,6 +870,7 @@ function DashboardInner() {
   const [activeNav, setActiveNav] = useState("dashboard");
   const [actions, setActions] = useState<AgentAction[]>(INITIAL_ACTIONS);
   const [paused, setPaused] = useState(false);
+  const [halted, setHalted] = useState(false);
   const [simState, setSimState] = useState<"idle" | "incoming" | "reasoning" | "responded">("idle");
   const [reasoningDots, setReasoningDots] = useState("");
 
@@ -739,6 +884,16 @@ function DashboardInner() {
   if (!role || !institution) return null;
 
   const activeTab = role === "compliance" ? "compliance" : role === "regulator" ? "regulator" : "treasury";
+  const roleTitle = activeTab === "treasury" ? "Treasury" : activeTab === "compliance" ? "Compliance" : "Regulatory Audit";
+  const sectionMeta = SECTION_TITLES[activeNav] ?? SECTION_TITLES.dashboard;
+
+  const haltAgent = () => {
+    if (halted) return;
+    if (window.confirm("Halt the agent? This invalidates the active AgentSession immediately and requires CEO + CFO co-signature to issue a new one.")) {
+      setHalted(true);
+      setPaused(true);
+    }
+  };
 
   const simulateMarginCall = async () => {
     if (simState !== "idle" || paused) return;
@@ -778,18 +933,16 @@ function DashboardInner() {
           style={{ background: `${C.bg}E0`, backdropFilter: "blur(12px)", borderBottom: `1px solid ${C.border}` }}>
           <div>
             <h1 className="text-base font-semibold" style={{ color: C.textPri }}>
-              {activeTab === "treasury" ? "Treasury Dashboard" : activeTab === "compliance" ? "Compliance Monitor" : "Regulatory Audit"}
+              {roleTitle} — {sectionMeta.title}
             </h1>
             <p className="text-xs mt-0.5" style={{ color: C.textMuted }}>
-              {activeTab === "treasury" ? "Live agent activity and session limits" :
-               activeTab === "compliance" ? "Real-time oversight of all agent actions" :
-               "Read-only cross-institution audit view"}
+              {sectionMeta.sub}
             </p>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-xs">
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: paused ? C.amber : C.green }} />
-              <span style={{ color: C.textSec }}>Agent {paused ? "Paused" : "Active"}</span>
+              <span className={`w-1.5 h-1.5 rounded-full ${halted ? "" : "animate-pulse"}`} style={{ background: halted ? C.red : paused ? C.amber : C.green }} />
+              <span style={{ color: C.textSec }}>Agent {halted ? "Halted" : paused ? "Paused" : "Active"}</span>
             </div>
           </div>
         </header>
@@ -797,6 +950,7 @@ function DashboardInner() {
         <main className="px-8 py-6">
           {activeTab === "treasury" && (
             <TreasuryTab
+              section={activeNav}
               actions={actions}
               simState={simState}
               reasoningDots={reasoningDots}
@@ -805,8 +959,8 @@ function DashboardInner() {
               onPause={() => setPaused(p => !p)}
             />
           )}
-          {activeTab === "compliance" && <ComplianceTab />}
-          {activeTab === "regulator" && <RegulatorTab />}
+          {activeTab === "compliance" && <ComplianceTab section={activeNav} halted={halted} onHalt={haltAgent} />}
+          {activeTab === "regulator" && <RegulatorTab section={activeNav} />}
         </main>
       </div>
     </div>

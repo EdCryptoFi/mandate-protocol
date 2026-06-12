@@ -6,6 +6,9 @@ An AI agent that manages institutional collateral and treasury operations — wi
 
 Built for the **Build on Canton Hackathon** by Encode Club × Canton Network.
 
+**🌐 Live product:** [mandate-protocol.vercel.app](https://mandate-protocol.vercel.app)
+**📦 Repository:** [github.com/EdCryptoFi/mandate-protocol](https://github.com/EdCryptoFi/mandate-protocol)
+
 ---
 
 ## The Problem
