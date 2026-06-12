@@ -3,6 +3,8 @@
 import httpx
 import json
 import os
+import re
+from urllib.parse import urlparse
 from typing import Any, Optional
 from dataclasses import dataclass
 
@@ -26,9 +28,26 @@ class CantonClient:
         self.base_url = base_url.rstrip("/")
         self.party_id = party_id
 
-        # Security: enforce HTTPS for any non-localhost endpoint.
-        # Canton DevNet/MainNet require TLS. Sandbox on localhost is the only exception.
-        is_localhost = any(h in self.base_url for h in ("localhost", "127.0.0.1", "0.0.0.0"))
+        # Parse de URL correta — nunca usar substring match para hostnaming (bypassável)
+        # "localhost" como substring permite "notlocalhost.evil.com" passar no check
+        parsed = urlparse(self.base_url)
+        hostname = parsed.hostname or ""
+
+        LOCALHOST_HOSTS = {"localhost", "127.0.0.1"}
+        # 0.0.0.0 = "all interfaces" em servidor, não é loopback — tratar como não-local
+        is_localhost = hostname in LOCALHOST_HOSTS
+
+        # Bloquear metadata endpoints de cloud e ranges privados (proteção SSRF)
+        BLOCKED_PATTERNS = [
+            r"^10\.\d+\.\d+\.\d+$",
+            r"^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$",
+            r"^192\.168\.\d+\.\d+$",
+            r"^169\.254\.169\.254$",  # AWS/GCP IMDS
+            r"^fd[0-9a-f]{2}:",       # IPv6 ULA
+        ]
+        if any(re.match(pat, hostname, re.IGNORECASE) for pat in BLOCKED_PATTERNS):
+            raise ValueError(f"SSRF blocked: internal/metadata IP not allowed: {hostname}")
+
         if not is_localhost and self.base_url.startswith("http://"):
             raise ValueError(
                 f"TLS required for non-localhost Canton endpoints. "
@@ -42,7 +61,7 @@ class CantonClient:
             base_url=self.base_url,
             headers=headers,
             timeout=30.0,
-            verify=not is_localhost,  # enforce cert verification for DevNet/MainNet
+            verify=True,  # sempre verificar certificado — mesmo para localhost em CI
         )
 
     async def close(self):

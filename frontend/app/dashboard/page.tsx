@@ -708,17 +708,35 @@ function RegulatorTab() {
   );
 }
 
+const VALID_ROLES = new Set(["treasury", "compliance", "regulator"]);
+const VALID_INSTITUTIONS = new Set(["BankA", "BankB", "Clearinghouse"]);
+
 /* ── Main page ── */
 function DashboardInner() {
   const searchParams = useSearchParams();
-  const role = searchParams.get("role") ?? "treasury";
-  const institution = searchParams.get("institution") ?? "BankA";
+  const router = useRouter();
+  const rawRole = searchParams.get("role") ?? "";
+  const rawInstitution = searchParams.get("institution") ?? "";
 
+  // Rejeitar valores não reconhecidos — nunca fallback silencioso para role privilegiado
+  const role = VALID_ROLES.has(rawRole) ? rawRole : null;
+  const institution = VALID_INSTITUTIONS.has(rawInstitution) ? rawInstitution : null;
+
+  // Hooks declarados antes de qualquer early return (Rules of Hooks)
   const [activeNav, setActiveNav] = useState("dashboard");
   const [actions, setActions] = useState<AgentAction[]>(INITIAL_ACTIONS);
   const [paused, setPaused] = useState(false);
   const [simState, setSimState] = useState<"idle" | "incoming" | "reasoning" | "responded">("idle");
   const [reasoningDots, setReasoningDots] = useState("");
+
+  useEffect(() => {
+    if (!role || !institution) {
+      router.replace("/login");
+    }
+  }, [role, institution, router]);
+
+  // Nenhum conteúdo renderizado se role/institution inválidos — redirect já disparado
+  if (!role || !institution) return null;
 
   const activeTab = role === "compliance" ? "compliance" : role === "regulator" ? "regulator" : "treasury";
 

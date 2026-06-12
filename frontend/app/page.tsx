@@ -449,7 +449,9 @@ export default function Landing() {
               Access Dashboard <ChevronRight size={15} />
             </button>
             <a
-              href="https://github.com"
+              href="https://github.com/EdCryptoFi/mandate-protocol"
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium text-sm"
               style={{ border: "1px solid #1e293b", color: "#64748b" }}
             >
