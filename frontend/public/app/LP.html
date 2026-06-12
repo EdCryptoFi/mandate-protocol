@@ -3,16 +3,44 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Mandate — Capital &amp; LPs</title>
+<title>Mandate — Audit Trail & User Guide</title>
 <link rel="stylesheet" href="../assets/theme.css"/>
 <link rel="stylesheet" href="../assets/app.css"/>
 <style>
-.call-card { background: linear-gradient(180deg, var(--mint-wash), #fff); border:1px solid rgba(13,90,67,.16); border-radius:14px; padding:18px; }
-.call-amt { font-family:var(--serif); font-size:34px; font-weight:400; letter-spacing:-0.02em; }
-.lp-prog { display:flex; align-items:center; gap:8px; }
-.lp-prog .pbar { flex:1; min-width:70px; }
-.kv2 { display:flex; justify-content:space-between; padding:9px 0; border-top:1px solid var(--hair-2); font-size:13px; }
-.kv2:first-child{border-top:0;} .kv2 .k{color:var(--muted);} .kv2 .v{font-family:var(--mono);font-weight:600;color:var(--ink);}
+.tab-bar{display:flex;gap:6px;margin-bottom:24px;border-bottom:1px solid var(--hair);padding-bottom:0}
+.tab{padding:10px 18px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab.active{color:var(--green);border-bottom-color:var(--green)}
+.tab:hover:not(.active){color:var(--ink)}
+.audit-row{border:1px solid var(--hair-strong);border-radius:10px;overflow:hidden;margin-bottom:8px}
+.audit-head{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;user-select:none}
+.audit-head:hover{background:var(--surface)}
+.audit-body{padding:12px 14px;border-top:1px solid var(--hair-2);background:var(--surface);display:none}
+.audit-row.open .audit-body{display:block}
+.audit-row.open .audit-head{background:var(--surface)}
+.audit-type{font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;letter-spacing:.04em}
+.audit-type.rebalance{background:rgba(13,90,67,.1);color:var(--green)}
+.audit-type.margincall{background:rgba(232,160,32,.12);color:#B57A10}
+.rationale-box{background:var(--paper-2);border:1px solid var(--hair);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.6;color:var(--ink-2);font-family:var(--mono)}
+.privacy-box{padding:12px 14px;border-radius:8px;background:rgba(13,90,67,.06);font-size:12px;color:var(--muted);border:1px solid var(--hair-strong);margin-top:8px}
+.kv{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--hair-2);font-size:13px}
+.kv:first-child{border-top:0}.kv .k{color:var(--muted)}.kv .v{font-family:var(--mono);font-weight:600;color:var(--ink)}
+/* guide */
+.guide-section{margin-bottom:32px}
+.guide-section h2{font-family:var(--serif);font-size:22px;font-weight:480;letter-spacing:-0.01em;color:var(--ink);margin-bottom:12px;margin-top:0}
+.guide-section h3{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:8px;margin-top:20px}
+.guide-section p,.guide-section li{font-size:14px;line-height:1.7;color:var(--ink-2);margin-bottom:8px}
+.guide-section ul,.guide-section ol{padding-left:20px}
+.guide-section code{font-family:var(--mono);font-size:12px;background:var(--surface);border:1px solid var(--hair-strong);padding:2px 6px;border-radius:4px}
+.role-block{border-left:3px solid var(--green);padding:12px 16px;margin-bottom:12px;background:var(--surface);border-radius:0 10px 10px 0}
+.role-block .role-name{font-weight:700;color:var(--ink);font-size:14px;margin-bottom:4px}
+.role-block .role-desc{font-size:13px;color:var(--ink-2)}
+.step-block{border:1px solid var(--hair-strong);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.step-num{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:6px}
+.step-title{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:8px}
+.security-table{width:100%;border-collapse:collapse;font-size:13px}
+.security-table th{text-align:left;padding:8px 12px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--hair-strong)}
+.security-table td{padding:10px 12px;border-bottom:1px solid var(--hair-2);color:var(--ink-2)}
+.security-table td:first-child{font-weight:600;color:var(--ink)}
 </style>
 </head>
 <body class="app">
@@ -20,138 +48,199 @@
   <aside class="side" id="side"></aside>
   <div class="main">
     <div class="topbar">
-      <div class="crumb"><span class="c0">Mandate Fund III</span><span class="sep">/</span><span class="c1">Capital &amp; LPs</span></div>
+      <div class="crumb"><span class="c0">Mandate Protocol</span><span class="sep">/</span><span class="c1">Audit Trail &amp; User Guide</span></div>
       <div class="topbar-actions">
-        <div class="search"><svg viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Search LPs…</div>
-        <button class="btn btn-primary btn-sm">Issue capital call</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportAudit()">Export audit log</button>
       </div>
     </div>
 
     <div class="content scroll-thin">
       <div class="content-inner">
         <div class="page-head">
-          <div><h1>Capital &amp; LPs</h1><div class="sub"><strong style="color:var(--ink)">96</strong> limited partners · $640M committed · DPI tracking to 0.44×</div></div>
+          <div><h1>Audit Trail &amp; User Guide</h1><div class="sub">Regulator view · all AI decisions on-chain · Canton sub-transaction privacy</div></div>
         </div>
 
-        <div class="kpi-row" id="kpi-row" style="grid-template-columns:repeat(4,1fr)"></div>
+        <div class="tab-bar">
+          <div class="tab active" onclick="showTab('audit',this)">Audit Trail</div>
+          <div class="tab" onclick="showTab('guide',this)">User Guide</div>
+          <div class="tab" onclick="showTab('security',this)">Security Model</div>
+        </div>
 
-        <div class="grid-main">
-          <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
-            <div class="panel">
-              <div class="panel-head"><h3>The J-curve</h3><span class="hint">cumulative net cashflow to LPs ($M)</span></div>
-              <div class="panel-body"><div id="ch-jcurve"></div>
-                <div style="font-size:13px;color:var(--muted);margin-top:6px;line-height:1.5">Fund III crossed breakeven in <strong style="color:var(--green)">2025</strong>. Projected to return <strong style="color:var(--ink)">$640M+</strong> net to LPs by 2028 on current marks.</div>
-              </div>
-            </div>
-
-            <div class="panel">
-              <div class="panel-head"><h3>Calls &amp; distributions</h3><div class="mini-legend"><div class="li"><span class="sw" style="background:#2F6E8F"></span>Called</div><div class="li"><span class="sw" style="background:#11C988"></span>Distributed</div></div></div>
-              <div class="panel-body"><div id="ch-calls"></div></div>
-            </div>
-
-            <div class="panel">
-              <div class="panel-head"><h3>Limited partners</h3><span class="hint">by commitment</span></div>
-              <div style="padding:6px 8px 12px">
-                <table class="ptable">
-                  <thead><tr><th>Partner</th><th>Type</th><th class="r">Committed</th><th style="width:130px">Called</th><th class="r">Distributed</th><th class="r">DPI</th></tr></thead>
-                  <tbody id="lp-body"></tbody>
-                </table>
-              </div>
-            </div>
+        <!-- AUDIT TRAIL TAB -->
+        <div id="tab-audit">
+          <div style="padding:12px 16px;border-radius:10px;background:rgba(13,90,67,.06);border:1px solid var(--hair-strong);font-size:13px;color:var(--ink-2);margin-bottom:20px">
+            <strong style="color:var(--green)">Privacy enforced by Canton protocol.</strong>
+            Every AI decision and its full reasoning is visible here. Collateral pool balances and position breakdowns are private to the institution —
+            enforced at the sub-transaction level by Canton Network, not by a permission flag in this application.
           </div>
+          <div class="kpi-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+            <div class="kpi"><div class="k">Total actions</div><div class="v num">2</div><div class="foot"><span class="delta up">all within limits</span></div></div>
+            <div class="kpi"><div class="k">Volume executed</div><div class="v num">$430k</div><div class="foot"><span class="delta up">21.5% of daily cap</span></div></div>
+            <div class="kpi"><div class="k">Human approvals</div><div class="v num">0</div><div class="foot"><span class="delta up">agent acted autonomously</span></div></div>
+          </div>
+          <div id="audit-log"></div>
+        </div>
 
-          <div style="display:flex;flex-direction:column;gap:20px">
-            <div class="call-card">
-              <div style="display:flex;align-items:center;justify-content:space-between">
-                <div class="label-xs" style="color:var(--green)">Capital Call #11 · draft</div>
-                <span class="chip-status watch"><span class="sdot warn"></span>Pending</span>
-              </div>
-              <div class="call-amt num" style="margin-top:10px">$28.0M</div>
-              <div style="font-size:13px;color:var(--muted);margin-top:4px">8.9% of remaining commitments · pro-rata across 96 LPs</div>
-              <div class="kv2" style="margin-top:14px"><span class="k">Purpose</span><span class="v">Reserves + 2 new deals</span></div>
-              <div class="kv2"><span class="k">Notice period</span><span class="v">10 days</span></div>
-              <div class="kv2"><span class="k">Settlement</span><span class="v">DVP · atomic</span></div>
-              <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:14px">Review &amp; issue on-chain</button>
+        <!-- USER GUIDE TAB -->
+        <div id="tab-guide" style="display:none">
+          <div style="max-width:720px">
+
+            <div class="guide-section">
+              <h2>Who Uses Mandate Protocol</h2>
+              <p>There are 4 roles. Each sees a different view and has different authority:</p>
+              <div class="role-block"><div class="role-name">CEO / CFO</div><div class="role-desc">Sets the rules nobody can break — the Institution Mandate. Requires two signatures. The absolute ceiling for the entire institution.</div></div>
+              <div class="role-block"><div class="role-name">Compliance Officer</div><div class="role-desc">Sets day-to-day risk parameters within the Institution Mandate. Can only tighten, never loosen. Signs the Operational Mandate alongside the Treasury Manager.</div></div>
+              <div class="role-block"><div class="role-name">Treasury Manager</div><div class="role-desc">Issues Agent Sessions — time-limited tokens the AI operates within. Monitors operations, responds to escalations, can pause the agent at any time.</div></div>
+              <div class="role-block"><div class="role-name">Regulator</div><div class="role-desc">Read-only access to all AgentAction contracts across institutions. Sees every AI decision and its full reasoning — but not the institution's pool balances or positions.</div></div>
             </div>
 
-            <div class="panel">
-              <div class="panel-head"><h3>By investor type</h3></div>
-              <div class="panel-body" style="display:flex;flex-direction:column;align-items:center;gap:6px">
-                <div id="ch-type"></div>
-                <div class="mini-legend" id="type-leg" style="width:100%;flex-direction:column;gap:8px;margin-top:6px"></div>
+            <div class="guide-section">
+              <h2>Setting Up Your Institution</h2>
+              <div class="step-block">
+                <div class="step-num">Step 1</div>
+                <div class="step-title">CEO + CFO create the Institution Mandate</div>
+                <p>This is your institution's constitutional ceiling. It takes two signatures and defines:</p>
+                <ul>
+                  <li>Which assets the agent can ever touch (Bond, Treasury, Cash, etc.)</li>
+                  <li>Which counterparties the agent can interact with</li>
+                  <li>The absolute ceiling for any single operation (e.g. $500,000)</li>
+                  <li>The absolute ceiling for total daily volume (e.g. $2,000,000)</li>
+                  <li>The mandate expiry date</li>
+                </ul>
+                <p><strong>Once signed, nobody can exceed these limits without revoking and reissuing the mandate.</strong></p>
+              </div>
+              <div class="step-block">
+                <div class="step-num">Step 2</div>
+                <div class="step-title">Compliance + Treasury issue Operational Parameters</div>
+                <p>Sets day-to-day operating parameters. Can only be tighter than the Institution Mandate — never looser:</p>
+                <ul>
+                  <li>Margin call response limit (e.g. $300,000)</li>
+                  <li>Target allocation per asset class (Bond 38%, Treasury 30%, Cash 10%)</li>
+                  <li>Rebalance threshold — how far an asset can drift before the agent acts (e.g. 5%)</li>
+                </ul>
+              </div>
+              <div class="step-block">
+                <div class="step-num">Step 3</div>
+                <div class="step-title">Treasury Manager issues an Agent Session</div>
+                <p>When the Treasury Manager is ready to activate the AI agent, they issue a Session — a time-limited token:</p>
+                <ul>
+                  <li>Session duration (e.g. 8 hours for a trading day)</li>
+                  <li>Which actions are permitted: CanRebalance, CanRespondToMarginCall, CanPostCollateral</li>
+                </ul>
+                <p>The session <strong>expires automatically</strong>. It must be renewed for each operating period — this is a deliberate safety design.</p>
               </div>
             </div>
 
-            <div class="panel">
-              <div class="panel-head"><h3>Recent activity</h3></div>
-              <div class="panel-body" style="padding-top:6px"><div id="activity-feed"></div></div>
+            <div class="guide-section">
+              <h2>What the Agent Does Automatically</h2>
+              <h3>Portfolio Drift → Rebalance</h3>
+              <p>If Bond drifts from 38% to 42%, the agent detects the deviation, reasons about the rebalance, checks all limits, executes, and stores the AI rationale on-chain.</p>
+              <h3>Incoming Margin Call → Automatic Response</h3>
+              <p>Bank B sends a margin call for $180K Cash. Agent checks: within margin call limit ($300K) ✓, within daily volume ✓, asset allowed ✓. Responds immediately. Audit log created.</p>
+              <h3>Action Exceeds Limits → Escalation</h3>
+              <p>If a margin call arrives for $420K (above $300K limit), the agent creates an <code>ApprovalRequest</code> on-chain. The Treasury Manager reviews and approves or rejects.</p>
+            </div>
+
+            <div class="guide-section">
+              <h2>Dashboard Views</h2>
+              <p>Select your role when signing in at <a href="/login" style="color:var(--green)">the login page</a>:</p>
+              <ul>
+                <li><strong>Treasury Manager</strong> — Pool allocation, volume usage, session limits, agent feed with AI rationale, pause/resume controls, margin call simulation</li>
+                <li><strong>Compliance Officer</strong> — Operational Mandate parameters, limit utilization, alert conditions</li>
+                <li><strong>Regulator</strong> — Full audit log with AI rationale for every action, privacy notice</li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- SECURITY MODEL TAB -->
+        <div id="tab-security" style="display:none">
+          <div style="max-width:720px">
+            <div style="padding:14px 18px;border-radius:10px;background:rgba(13,90,67,.06);border:1px solid var(--hair-strong);font-size:14px;color:var(--ink-2);margin-bottom:24px;line-height:1.6">
+              <strong style="color:var(--ink)">No password. No admin panel. No security through obscurity.</strong><br/>
+              The Daml contracts are the security. Every limit check runs as an <code style="font-size:12px;background:var(--surface);border:1px solid var(--hair-strong);padding:1px 5px;border-radius:4px">assertMsg</code> inside the Canton Daml contract — the ledger physically cannot execute an action that violates a limit.
+            </div>
+            <table class="security-table">
+              <thead><tr><th>Layer</th><th>What protects it</th></tr></thead>
+              <tbody>
+                <tr><td>Institution identity</td><td>Canton party cryptography — each institution is a cryptographic key pair</td></tr>
+                <tr><td>Agent authority</td><td>On-chain <code>assertMsg</code> inside Daml contracts — executes before every action</td></tr>
+                <tr><td>Privacy of positions</td><td>Canton sub-transaction privacy — protocol-level, not a permission flag</td></tr>
+                <tr><td>Audit trail</td><td>Immutable on-chain contracts — signatory: institution + agent</td></tr>
+                <tr><td>Session expiry</td><td>Time-limited AgentSession contracts — cannot be extended, must be re-issued</td></tr>
+                <tr><td>Emergency stop</td><td>EmergencyPause choice available to institution or compliance officer</td></tr>
+                <tr><td>API key security</td><td>Pinned Python dependencies, TLS required for non-localhost connections</td></tr>
+                <tr><td>Frontend headers</td><td>CSP, X-Frame-Options DENY, HSTS, no source maps in production</td></tr>
+              </tbody>
+            </table>
+            <div class="guide-section" style="margin-top:28px">
+              <h2>12 Daml e2e Tests</h2>
+              <p>All 12 scenarios verified against the Canton Sandbox, including forced limit violations:</p>
+              <div id="security-tests"></div>
             </div>
           </div>
         </div>
+
         <div style="height:20px"></div>
       </div>
     </div>
   </div>
 </div>
 
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <script src="../assets/data.js"></script>
 <script src="../assets/sidebar.js"></script>
-<script type="text/babel" src="../assets/charts-core.jsx"></script>
-<script type="text/babel" src="../assets/charts-extra.jsx"></script>
-<script type="text/babel" data-presets="react">
+<script>
 const M = window.MANDATE;
-function initials(n){ return n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
 
-// KPIs
-const kpis=[
-  {k:'Committed', v:'$640M', delta:'96 LPs', up:true, spark:[640,640,640,640], color:'#0D5A43'},
-  {k:'Called', v:'$486M', delta:'76% drawn', up:true, spark:M.navSeries.map(d=>d.called), color:'#2F6E8F'},
-  {k:'Distributed', v:'$214M', delta:'+$22M MTD', up:true, spark:M.navSeries.map(d=>d.dist), color:'#11C988'},
-  {k:'Net DPI', v:'0.44×', delta:'+0.03', up:true, spark:[0,0.05,0.12,0.22,0.31,0.40,0.44], color:'#0D5A43'},
-];
-function Kpi({d}){ return (<div className="kpi"><div className="k">{d.k}</div><div className="v num">{d.v}</div>
-  <div className="foot"><span className="delta up"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M3 5l3-3 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>{d.delta}</span><div style={{width:70}}><Sparkline values={d.spark} width={70} height={26} color={d.color}/></div></div></div>); }
-ReactDOM.createRoot(document.getElementById('kpi-row')).render(<>{kpis.map((d,i)=><Kpi key={i} d={d}/>)}</>);
-
-// J-curve
-ReactDOM.createRoot(document.getElementById('ch-jcurve')).render(<JCurve data={M.jcurve} height={280}/>);
-
-// calls & distributions (stacked-ish grouped)
-const callsData = M.navSeries.map((d,i,arr)=>{ const prev=i?arr[i-1]:{called:0,dist:0};
-  return { t:d.t, a: d.called-(prev.called||0), b: d.dist-(prev.dist||0) }; });
-ReactDOM.createRoot(document.getElementById('ch-calls')).render(
-  <GroupBars data={callsData} height={240} seriesA={{label:'Called',color:'#2F6E8F'}} seriesB={{label:'Distributed',color:'#11C988'}}/>
-);
-
-// LP table
-const lpBody=document.getElementById('lp-body');
-M.lps.forEach(lp=>{ const pct=Math.round(lp.called/lp.committed*100);
-  const tr=document.createElement('tr');
-  tr.innerHTML=`<td><div class="co"><span class="logo-chip" style="width:30px;height:30px;font-size:12px;background:#0D5A43">${initials(lp.name)}</span><div class="nm">${lp.name}</div></div></td>
-    <td><span class="tag">${lp.type}</span></td>
-    <td class="r num" style="color:var(--ink)">$${lp.committed}M</td>
-    <td><div class="lp-prog"><div class="pbar"><i style="width:${pct}%;background:var(--sky)"></i></div><span class="num" style="font-size:11px;color:var(--muted)">${pct}%</span></div></td>
-    <td class="r num">$${lp.distributed}M</td>
-    <td class="r num" style="color:var(--green);font-weight:600">${lp.dpi.toFixed(2)}×</td>`;
-  lpBody.appendChild(tr);
+// Audit log
+const al = document.getElementById('audit-log');
+M.agentActions.forEach(a=>{
+  const isM=a.actionType==='MarginCallResponse';
+  const div=document.createElement('div'); div.className='audit-row';
+  const checks=(a.limitChecks||[]).map(c=>`<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin-top:4px;color:var(--ink-2)"><span style="color:var(--green);font-weight:700">✓</span><span>${c.name}${c.checked?' · $'+c.checked.toLocaleString()+' / $'+(c.allowed||0).toLocaleString():''}</span></div>`).join('');
+  div.innerHTML=`<div class="audit-head" onclick="this.parentElement.classList.toggle('open')">
+    <span class="audit-type ${isM?'margincall':'rebalance'}">${isM?'MARGIN CALL':'REBALANCE'}</span>
+    <span style="font-size:13px;font-weight:500;color:var(--ink)">${a.actionId} · $${a.amount.toLocaleString()} ${a.asset}${a.toAsset?' → '+a.toAsset:''}</span>
+    <span style="margin-left:auto;font-size:11px;color:var(--muted)">${(a.timestamp||'').substring(11,16)} UTC · Bank A</span>
+    <span style="font-size:11px;color:var(--green);font-weight:600">✓ Verified</span>
+  </div>
+  <div class="audit-body">
+    <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">AI Rationale — immutable on Canton ledger · ${a.damlTx||''}</div>
+    <div class="rationale-box">${a.aiRationale||''}</div>
+    ${checks}
+    <div class="privacy-box">⚠ Collateral pool balance and full position breakdown are private to Bank A. Canton sub-transaction privacy enforces this at the protocol level — the regulator cannot access pool data.</div>
+    <div class="kv"><span class="k">Human approved</span><span class="v">${a.humanApproved?'Yes':'No — within session limits'}</span></div>
+    <div class="kv"><span class="k">Daml contract</span><span class="v">${a.damlTx||'—'}</span></div>
+  </div>`;
+  al.appendChild(div);
 });
 
-// by investor type donut
-const types={}; M.lps.forEach(lp=>{ types[lp.type]=(types[lp.type]||0)+lp.committed; });
-const typeColors=['#0D5A43','#11C988','#2F6E8F','#6A4A7A','#B5764A','#9A7A3C','#5C7A3C'];
-const typeData=Object.keys(types).map((t,i)=>({label:t, value:types[t], color:typeColors[i%typeColors.length]}));
-ReactDOM.createRoot(document.getElementById('ch-type')).render(<DonutChart data={typeData} size={150} thickness={22} centerValue="$640M" centerLabel="Committed"/>);
-const tl=document.getElementById('type-leg'); const tTot=typeData.reduce((s,x)=>s+x.value,0);
-typeData.forEach(x=>{ const d=document.createElement('div'); d.className='li'; d.innerHTML=`<span class="sw" style="background:${x.color}"></span>${x.label}<span class="va">$${x.value}M</span>`; tl.appendChild(d); });
+// Security tests
+const st = document.getElementById('security-tests');
+if(st) M.damlTests.forEach(t=>{
+  const div=document.createElement('div');
+  div.style.cssText='display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--hair-2);font-size:13px';
+  div.innerHTML=`<span style="font-family:var(--mono);font-size:11px;color:var(--muted);min-width:24px">${String(t.step).padStart(2,'0')}</span><span style="flex:1;color:${t.highlight?'var(--ink)':'var(--ink-2)'};font-weight:${t.highlight?'600':'400'}">${t.label}</span><span style="font-size:11px;font-weight:700;color:var(--green);font-family:var(--mono)">PASS ✓</span>`;
+  st.appendChild(div);
+});
 
-// activity
-const icons={call:'↑',invest:'◆',dist:'↓'};
-const af=document.getElementById('activity-feed');
-M.activity.forEach(a=>{ const r=document.createElement('div'); r.className='feed-item';
-  r.innerHTML=`<div class="feed-ico ${a.kind}">${icons[a.kind]}</div><div style="flex:1"><div class="ft">${a.label}</div><div class="fs">${a.sub}</div></div><div class="fd">${a.date}</div>`; af.appendChild(r); });
+function showTab(name, btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  ['audit','guide','security'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display=t===name?'':'none';
+  });
+}
+
+function exportAudit(){
+  const data = JSON.stringify(window.MANDATE.agentActions, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mandate-audit-log.json';
+  a.click();
+}
 </script>
 </body>
 </html>

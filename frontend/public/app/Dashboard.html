@@ -3,132 +3,169 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Mandate — Fund III Overview</title>
+<title>Mandate — Treasury Dashboard</title>
 <link rel="stylesheet" href="../assets/theme.css"/>
 <link rel="stylesheet" href="../assets/app.css"/>
+<style>
+.role-tabs{display:flex;gap:6px;margin-bottom:20px}
+.role-tab{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--hair-strong);color:var(--muted);background:transparent;transition:all .15s}
+.role-tab.active{background:var(--green);color:#fff;border-color:var(--green)}
+.role-tab:hover:not(.active){color:var(--ink);border-color:var(--green)}
+.limit-row{display:flex;flex-direction:column;gap:6px;padding:12px 0;border-top:1px solid var(--hair-2)}
+.limit-row:first-child{border-top:0;padding-top:0}
+.limit-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.limit-bar{height:5px;border-radius:3px;background:var(--hair-strong);overflow:hidden}
+.limit-fill{height:100%;border-radius:3px;background:var(--green);transition:width .4s}
+.limit-fill.warn{background:#E8A020}
+.action-card{border:1px solid var(--hair-strong);border-radius:12px;overflow:hidden;margin-bottom:10px}
+.action-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none}
+.action-head:hover{background:var(--surface)}
+.action-type{font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;letter-spacing:.04em}
+.action-type.rebalance{background:rgba(13,90,67,.1);color:var(--green)}
+.action-type.margincall{background:rgba(232,160,32,.12);color:#B57A10}
+.action-body{padding:12px 14px 14px;border-top:1px solid var(--hair-2);background:var(--surface);display:none}
+.action-card.open .action-body{display:block}
+.action-card.open .action-head{background:var(--surface)}
+.rationale-box{background:var(--paper-2);border:1px solid var(--hair);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.6;color:var(--ink-2);font-family:var(--mono)}
+.lc-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2);margin-top:5px}
+.lc-pass{color:var(--green);font-weight:600}
+.kv{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--hair-2);font-size:13px}
+.kv:first-child{border-top:0}.kv .k{color:var(--muted)}.kv .v{font-family:var(--mono);font-weight:600;color:var(--ink)}
+.simulate-btn{display:flex;align-items:center;gap:8px;padding:9px 18px;border-radius:10px;background:rgba(232,160,32,.1);border:1px solid rgba(232,160,32,.3);color:#B57A10;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.simulate-btn:hover{background:rgba(232,160,32,.18)}
+.alert-banner{padding:12px 16px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:16px;display:none;align-items:center;gap:10px}
+.alert-banner.show{display:flex}
+.alert-banner.incoming{background:rgba(232,160,32,.12);border:1px solid rgba(232,160,32,.28);color:#B57A10}
+.alert-banner.reasoning{background:rgba(79,110,247,.1);border:1px solid rgba(79,110,247,.25);color:#3A5CC8}
+.alert-banner.responded{background:rgba(13,90,67,.1);border:1px solid var(--green);color:var(--green)}
+.reg-notice{padding:12px 16px;border-radius:10px;background:rgba(13,90,67,.06);border:1px solid var(--hair-strong);font-size:13px;color:var(--ink-2);margin-bottom:16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
 </head>
 <body class="app">
 <div class="app-shell">
-
-  <!-- SIDEBAR -->
   <aside class="side" id="side"></aside>
-
-  <!-- MAIN -->
   <div class="main">
     <div class="topbar">
-      <div class="crumb">
-        <span class="c0">Mandate Fund III</span><span class="sep">/</span><span class="c1">Overview</span>
-      </div>
+      <div class="crumb"><span class="c0">Mandate Protocol</span><span class="sep">/</span><span class="c1">Treasury Dashboard</span></div>
       <div class="topbar-actions">
-        <div class="search"><svg viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Search portfolio, deals…</div>
-        <div class="icon-btn"><span class="ping"></span><svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M10 2a5 5 0 015 5v3l1.5 3h-13L5 10V7a5 5 0 015-5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 16a2 2 0 004 0" stroke="currentColor" stroke-width="1.5"/></svg></div>
-        <a href="LP.html" class="btn btn-primary btn-sm">Issue capital call</a>
+        <div class="search"><svg viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Search…</div>
+        <button class="btn btn-ghost btn-sm" id="pause-btn" onclick="togglePause()">⏸ Pause Agent</button>
+        <button class="simulate-btn" onclick="simulateMarginCall()">⚡ Simulate Margin Call</button>
       </div>
     </div>
 
     <div class="content scroll-thin">
       <div class="content-inner">
-
         <div class="page-head">
           <div>
-            <h1>Good morning, Dana.</h1>
-            <div class="sub">Fund III is tracking <strong style="color:var(--green)">2.88× TVPI</strong> — agent ran 14 checks since yesterday, 1 escalation pending.</div>
-          </div>
-          <div class="seg" id="period-seg">
-            <button data-p="1Y">1Y</button><button data-p="3Y">3Y</button><button class="on" data-p="ALL">All</button>
+            <h1>Treasury Dashboard</h1>
+            <div class="sub">Bank A — Global Treasury · <strong style="color:var(--green)" id="session-status">Agent session live</strong> · AGT-2026-001</div>
           </div>
         </div>
 
-        <!-- KPIs -->
-        <div class="kpi-row" id="kpi-row"></div>
+        <div class="role-tabs">
+          <button class="role-tab active" onclick="setRole('treasury',this)">Treasury Manager</button>
+          <button class="role-tab" onclick="setRole('compliance',this)">Compliance Officer</button>
+          <button class="role-tab" onclick="setRole('regulator',this)">Regulator</button>
+        </div>
 
-        <!-- MAIN GRID -->
+        <div class="alert-banner" id="alert-banner"></div>
+
+        <div class="kpi-row" id="kpi-row" style="grid-template-columns:repeat(4,1fr)"></div>
+
         <div class="grid-main">
           <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
 
-            <div class="panel">
-              <div class="panel-head">
-                <h3>Portfolio value &amp; capital</h3>
-                <div class="mini-legend">
-                  <div class="li"><span class="sw" style="background:#0D5A43"></span>NAV</div>
-                  <div class="li"><span class="sw" style="background:#2F6E8F"></span>Called</div>
-                  <div class="li"><span class="sw" style="background:#11C988"></span>Distributed</div>
-                </div>
-              </div>
-              <div class="panel-body"><div id="ch-nav"></div></div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+            <div id="view-treasury">
               <div class="panel">
-                <div class="panel-head"><h3>Allocation</h3><span class="hint">by sector</span></div>
-                <div class="panel-body" style="display:flex;gap:18px;align-items:center">
-                  <div id="ch-donut"></div>
-                  <div class="mini-legend" id="donut-leg" style="flex-direction:column;gap:9px;flex:1"></div>
+                <div class="panel-head"><h3>Holdings allocation</h3><span class="hint">target vs actual · $5.2M pool</span></div>
+                <div class="panel-body" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+                  <div id="ch-alloc"></div>
+                  <div style="flex:1;min-width:160px">
+                    <table class="ptable" style="font-size:12px">
+                      <thead><tr><th>Asset</th><th class="r">Actual</th><th class="r">Target</th><th class="r">Drift</th></tr></thead>
+                      <tbody id="alloc-table"></tbody>
+                    </table>
+                  </div>
                 </div>
+              </div>
+              <div class="panel" style="margin-top:20px">
+                <div class="panel-head"><h3>Volume usage today</h3><span class="hint">daily cap: $2,000,000</span></div>
+                <div class="panel-body"><div id="ch-volume"></div></div>
+              </div>
+            </div>
+
+            <div id="view-compliance" style="display:none">
+              <div class="panel">
+                <div class="panel-head"><h3>Operational Mandate parameters</h3><span class="hint">signed by Compliance + Treasury</span></div>
+                <div class="panel-body">
+                  <div class="kv"><span class="k">Rebalance threshold</span><span class="v">5% drift</span></div>
+                  <div class="kv"><span class="k">Margin call limit</span><span class="v">$300,000</span></div>
+                  <div class="kv"><span class="k">Single action cap</span><span class="v">$500,000</span></div>
+                  <div class="kv"><span class="k">Daily volume cap</span><span class="v">$2,000,000</span></div>
+                  <div class="kv"><span class="k">Allowed assets</span><span class="v">Bond, Treasury, Cash, Equity, Commodity</span></div>
+                  <div class="kv"><span class="k">Counterparties</span><span class="v">Bank B, Clearinghouse Gamma</span></div>
+                  <div class="kv"><span class="k">Last updated</span><span class="v">2026-06-10 · Compliance Officer</span></div>
+                </div>
+              </div>
+              <div class="panel" style="margin-top:20px">
+                <div class="panel-head"><h3>Limit utilization today</h3></div>
+                <div class="panel-body" id="compliance-limits"></div>
+              </div>
+            </div>
+
+            <div id="view-regulator" style="display:none">
+              <div class="reg-notice">
+                <strong style="color:var(--green)">Privacy enforced by Canton protocol.</strong> Every AI decision and reasoning is visible below. Collateral pool balances are private to the institution — enforced at the sub-transaction level by Canton, not by a permission flag.
               </div>
               <div class="panel">
-                <div class="panel-head"><h3>Capital deployed</h3><span class="hint">of $640M committed</span></div>
-                <div class="panel-body" style="display:flex;gap:14px;align-items:center">
-                  <div id="ch-gauge"></div>
-                  <div class="mini-legend" id="gauge-leg" style="flex-direction:column;gap:11px;flex:1"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="panel">
-              <div class="panel-head"><h3>Value creation</h3><span class="hint">cost → NAV, gross ($M)</span></div>
-              <div class="panel-body"><div id="ch-waterfall"></div></div>
-            </div>
-
-            <div class="panel">
-              <div class="panel-head">
-                <h3>Top positions</h3>
-                <a href="Fund.html" class="link-arrow" style="font-size:13px">Full portfolio
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </a>
-              </div>
-              <div style="padding:6px 8px 10px">
-                <table class="ptable">
-                  <thead><tr><th>Company</th><th>Stage</th><th class="r">Invested</th><th class="r">Own.</th><th class="r">Value</th><th class="r">MOIC</th><th style="width:90px">Trend</th></tr></thead>
-                  <tbody id="pos-body"></tbody>
-                </table>
+                <div class="panel-head"><h3>Agent action audit log</h3><span class="hint">all actions · immutable on-chain</span></div>
+                <div class="panel-body" id="reg-audit-full"></div>
               </div>
             </div>
 
           </div>
 
-          <!-- RIGHT RAIL -->
           <div style="display:flex;flex-direction:column;gap:20px">
-
             <div class="panel">
-              <div class="panel-head"><h3>Agent session</h3><span class="chip-status live"><span class="sdot live"></span>Active</span></div>
+              <div class="panel-head"><h3>Session limits</h3><div><span class="chip-status"><span class="sdot live"></span>AGT-2026-001</span></div></div>
               <div class="panel-body">
-                <div style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:14px">Operating within <strong style="color:var(--ink)">Allocation Policy v4</strong>. Single-deal cap <span class="num">$20M</span>, reserve ratio <span class="num">≤35%</span>. Session expires in <span class="num" style="color:var(--green)">4h 12m</span>.</div>
-                <div class="label-xs" style="margin-bottom:10px">Recent actions · on-chain</div>
-                <div id="agent-feed"></div>
+                <div class="limit-row">
+                  <div class="limit-meta"><span>Daily Volume</span><span class="num">$430k <span style="color:var(--muted)">/ $2,000k</span></span></div>
+                  <div class="limit-bar"><div class="limit-fill" style="width:21.5%"></div></div>
+                </div>
+                <div class="limit-row">
+                  <div class="limit-meta"><span>Margin Call Response</span><span class="num">$180k <span style="color:var(--muted)">/ $300k</span></span></div>
+                  <div class="limit-bar"><div class="limit-fill warn" style="width:60%"></div></div>
+                </div>
+                <div class="limit-row">
+                  <div class="limit-meta"><span>Single Action Cap</span><span class="num">$250k <span style="color:var(--muted)">/ $500k</span></span></div>
+                  <div class="limit-bar"><div class="limit-fill" style="width:50%"></div></div>
+                </div>
+                <div class="kv" style="margin-top:8px"><span class="k">Expires</span><span class="v">8h 12m</span></div>
+                <div class="kv"><span class="k">Actions today</span><span class="v">2</span></div>
+                <div class="kv"><span class="k">Permitted</span><span class="v" style="font-size:11px">Rebalance · MarginCall · PostCollateral</span></div>
               </div>
             </div>
 
             <div class="panel">
-              <div class="panel-head"><h3>Capital activity</h3><a href="LP.html" class="hint" style="color:var(--green)">View all</a></div>
+              <div class="panel-head"><h3>Agent actions</h3><span class="hint">on-chain · AI rationale stored</span></div>
+              <div class="panel-body" id="agent-feed"></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><h3>Activity</h3></div>
               <div class="panel-body" style="padding-top:6px"><div id="activity-feed"></div></div>
             </div>
-
-            <div class="panel">
-              <div class="panel-head"><h3>Pipeline</h3><a href="Deal.html" class="hint" style="color:var(--green)">Deal flow →</a></div>
-              <div class="panel-body" style="padding-top:8px"><div id="pipeline-mini"></div></div>
-            </div>
-
           </div>
         </div>
-
         <div style="height:20px"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- React + charts -->
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
@@ -138,115 +175,136 @@
 <script type="text/babel" src="../assets/charts-extra.jsx"></script>
 <script type="text/babel" data-presets="react">
 const M = window.MANDATE;
-const sectorColor = M.sectorColors;
-
-// ---- KPI cards ----
-const kpis = [
-  { k:'Portfolio NAV', v:'$1.18B', delta:'+15.6% QoQ', up:true, spark:M.navSeries.map(d=>d.nav), color:'#0D5A43' },
-  { k:'Net IRR', v:'31.4%', delta:'+2.1 pts', up:true, spark:[18,21,24,26,28,29,31,31.4], color:'#0D5A43' },
-  { k:'TVPI', v:'2.88×', delta:'+0.14', up:true, spark:[1.0,1.3,1.7,2.0,2.3,2.5,2.7,2.88], color:'#0D5A43' },
-  { k:'DPI', v:'0.44×', delta:'+0.03', up:true, spark:[0,0.02,0.05,0.12,0.22,0.31,0.40,0.44], color:'#2F6E8F' },
-  { k:'Deployed', v:'$452M', delta:'71% of called', up:true, spark:[64,150,228,286,336,410,468,486], color:'#11C988' },
+const kpis=[
+  {k:'Pool Value',   v:'$5.2M',  delta:'32% utilization', spark:[4.1,4.35,4.58,4.82,5.05,5.2],  color:'#0D5A43'},
+  {k:'Daily Volume', v:'$430k',  delta:'21.5% of cap',    spark:[0,100,250,250,430,430],          color:'#2F6E8F'},
+  {k:'Actions Today',v:'2',      delta:'all within limits',spark:[0,0,1,1,2,2],                  color:'#11C988'},
+  {k:'Session',      v:'8h 12m', delta:'AGT-2026-001',    spark:[10,9,8.5,8.3,8.2,8.2],         color:'#0D5A43'},
 ];
-function KpiCard({d, i}){
-  return (
-    <div className="kpi">
-      <div className="k">{d.k}</div>
-      <div className="v num">{d.v}</div>
-      <div className="foot">
-        <span className={'delta '+(d.up?'up':'down')}>
-          <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style={{transform:d.up?'none':'rotate(180deg)'}}><path d="M6 2v8M3 5l3-3 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          {d.delta}
-        </span>
-        <div style={{width:70}}><Sparkline values={d.spark} width={70} height={26} color={d.color}/></div>
-      </div>
-    </div>
-  );
-}
-ReactDOM.createRoot(document.getElementById('kpi-row')).render(<>{kpis.map((d,i)=><KpiCard key={i} d={d} i={i}/>)}</>);
+function Kpi({d}){return(<div className="kpi"><div className="k">{d.k}</div><div className="v num">{d.v}</div>
+  <div className="foot"><span className="delta up"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M3 5l3-3 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>{d.delta}</span>
+  <div style={{width:70}}><Sparkline values={d.spark} width={70} height={26} color={d.color}/></div></div></div>);}
+ReactDOM.createRoot(document.getElementById('kpi-row')).render(<>{kpis.map((d,i)=><Kpi key={i} d={d}/>)}</>);
 
-// ---- NAV chart ----
-ReactDOM.createRoot(document.getElementById('ch-nav')).render(
-  <NavChart data={M.navSeries} height={290} valueKey="nav" tipLabel="NAV"
-    series={[{key:'called',label:'Called',color:'#2F6E8F',dash:'5 4'},{key:'dist',label:'Distributed',color:'#11C988',dash:'2 3'}]}/>
+ReactDOM.createRoot(document.getElementById('ch-alloc')).render(
+  <DonutChart data={M.allocation} size={150} thickness={22} centerValue="$5.2M" centerLabel="Pool"/>
 );
 
-// ---- Donut ----
-ReactDOM.createRoot(document.getElementById('ch-donut')).render(
-  <DonutChart data={M.allocation} size={170} thickness={24} centerValue="$452M" centerLabel="Deployed"/>
-);
-const dleg = document.getElementById('donut-leg');
-const totAlloc = M.allocation.reduce((s,a)=>s+a.value,0);
-M.allocation.forEach(a=>{ const d=document.createElement('div'); d.className='li';
-  d.innerHTML=`<span class="sw" style="background:${a.color}"></span>${a.label}<span class="va">${Math.round(a.value/totAlloc*100)}%</span>`; dleg.appendChild(d); });
-
-// ---- Gauge ----
-ReactDOM.createRoot(document.getElementById('ch-gauge')).render(
-  <DeployedGauge segments={M.capital} size={150} label="Deployed"/>
-);
-const gleg = document.getElementById('gauge-leg');
-M.capital.forEach(c=>{ const d=document.createElement('div'); d.className='li';
-  d.innerHTML=`<span class="sw" style="background:${c.color}"></span>${c.label}<span class="va">$${c.value}M</span>`; gleg.appendChild(d); });
-
-// ---- Waterfall ----
-ReactDOM.createRoot(document.getElementById('ch-waterfall')).render(
-  <Waterfall data={M.waterfall} height={280}/>
-);
-
-// ---- Top positions table ----
-function initials(n){ return n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
-const posBody = document.getElementById('pos-body');
-M.companies.slice(0,7).forEach(c=>{
-  const tr = document.createElement('tr');
-  tr.onclick = ()=> location.href = 'Deal.html?c='+c.id;
-  tr.innerHTML = `
-    <td><div class="co"><span class="logo-chip" style="background:${sectorColor[c.sector]}">${initials(c.name)}</span>
-      <div><div class="nm">${c.name}</div><div class="meta">${c.sector} · ${c.geo}</div></div></div></td>
-    <td><span class="tag">${c.stage}</span></td>
-    <td class="r num">$${c.invested}M</td>
-    <td class="r num">${c.ownership}%</td>
-    <td class="r num" style="color:var(--ink)">$${c.value}M</td>
-    <td class="r num" style="color:${c.moic>=1?'var(--green)':'var(--danger)'};font-weight:600">${c.moic.toFixed(1)}×</td>
-    <td><span class="spark-slot"></span></td>`;
-  posBody.appendChild(tr);
-  // sparkline mount
-  const base=c.invested, end=c.value;
-  const vals=Array.from({length:7},(_,i)=> base + (end-base)*Math.pow(i/6, 1.4) * (0.85+0.3*Math.random()));
-  const slot=tr.querySelector('.spark-slot');
-  ReactDOM.createRoot(slot).render(<Sparkline values={vals} width={80} height={24} color={c.moic>=1?'#0D5A43':'#B4472E'}/>);
+const at=document.getElementById('alloc-table');
+M.holdings.forEach(h=>{
+  const drift=h.pct-h.target;
+  const dStr=(drift>0?'+':'')+drift+'pp';
+  const dc=Math.abs(drift)>4?'#D44B40':Math.abs(drift)>2?'#B57A10':'var(--green)';
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><span class="tag" style="background:${h.color}20;color:${h.color}">${h.label}</span></td><td class="r num">${h.pct}%</td><td class="r num" style="color:var(--muted)">${h.target}%</td><td class="r num" style="color:${dc};font-weight:600">${dStr}</td>`;
+  at.appendChild(tr);
 });
 
-// ---- Agent feed ----
-const agentActions = [
-  { t:'09:41', verdict:'pass', label:'Follow-on Helix Labs', detail:'$8.0M from reserves · within reserve ratio (29%)' },
-  { t:'08:58', verdict:'check', label:'Rebalance check', detail:'AI/ML at 28% — under 35% policy ceiling' },
-  { t:'07:32', verdict:'escalate', label:'Cipher Series A', detail:'$18M ask near single-deal cap — routed to IC' },
-  { t:'Yest', verdict:'pass', label:'Distribution settled', detail:'Ledgerline secondary · $22.0M DVP atomic' },
-];
-const af = document.getElementById('agent-feed');
-agentActions.forEach(a=>{ const r=document.createElement('div'); r.className='agent-row';
-  r.innerHTML=`<div class="dot-time">${a.t}</div><div class="body"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><span style="font-weight:500;color:var(--ink);font-size:13px">${a.label}</span><span class="verdict ${a.verdict}">${a.verdict}</span></div><div style="font-size:12px;color:var(--muted);line-height:1.4">${a.detail}</div></div>`;
-  af.appendChild(r); });
+ReactDOM.createRoot(document.getElementById('ch-volume')).render(
+  <NavChart data={M.volumeSeries} height={180} valueKey="volume" tipLabel="Volume USD" series={[]}/>
+);
 
-// ---- Activity feed ----
-const icons = { call:'↑', invest:'◆', dist:'↓' };
-const actf = document.getElementById('activity-feed');
-M.activity.forEach(a=>{ const r=document.createElement('div'); r.className='feed-item';
-  r.innerHTML=`<div class="feed-ico ${a.kind}">${icons[a.kind]}</div><div style="flex:1"><div class="ft">${a.label}</div><div class="fs">${a.sub}</div></div><div class="fd">${a.date}</div>`;
-  actf.appendChild(r); });
-
-// ---- Pipeline mini ----
-const pm = document.getElementById('pipeline-mini');
-M.pipeline.slice(0,4).forEach(p=>{ const r=document.createElement('a'); r.href='Deal.html'; r.className='feed-item plain'; r.style.textDecoration='none';
-  r.innerHTML=`<span class="logo-chip" style="width:30px;height:30px;font-size:13px;background:${sectorColor[p.sector]}">${initials(p.name)}</span><div style="flex:1"><div class="ft">${p.name}</div><div class="fs">${p.stage} · $${p.ask}M · ${p.status}</div></div><div class="fd" style="color:var(--green);font-weight:600">${p.score}</div>`;
-  pm.appendChild(r); });
+const cl=document.getElementById('compliance-limits');
+if(cl){[
+  {label:'Daily Volume',  used:430000, cap:2000000},
+  {label:'Margin Call',   used:180000, cap:300000},
+  {label:'Single Action', used:250000, cap:500000},
+].forEach(l=>{
+  const pct=Math.round(l.used/l.cap*100);
+  const color=pct>80?'#D44B40':pct>60?'#E8A020':'var(--green)';
+  const div=document.createElement('div'); div.className='limit-row';
+  div.innerHTML=`<div class="limit-meta"><span>${l.label}</span><span class="num">$${(l.used/1000).toFixed(0)}k <span style="color:var(--muted)">/ $${(l.cap/1000).toFixed(0)}k</span></span></div><div class="limit-bar"><div class="limit-fill" style="width:${pct}%;background:${color}"></div></div>`;
+  cl.appendChild(div);
+});}
 </script>
 
 <script>
-  // period segmented control (visual only)
-  document.querySelectorAll('#period-seg button').forEach(b=>b.onclick=()=>{
-    document.querySelectorAll('#period-seg button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+function renderActions(actions){
+  const feed=document.getElementById('agent-feed');
+  if(!feed)return;
+  feed.innerHTML='';
+  actions.forEach(a=>{
+    const isM=a.actionType==='MarginCallResponse';
+    const card=document.createElement('div'); card.className='action-card';
+    const checks=(a.limitChecks||[]).map(c=>`<div class="lc-row"><span class="lc-pass">✓</span><span>${c.name}${c.checked?' · $'+c.checked.toLocaleString()+' / $'+(c.allowed||0).toLocaleString():''}</span></div>`).join('');
+    card.innerHTML=`<div class="action-head" onclick="this.parentElement.classList.toggle('open')">
+      <span class="action-type ${isM?'margincall':'rebalance'}">${isM?'MARGIN CALL':'REBALANCE'}</span>
+      <span style="font-size:13px;font-weight:500;color:var(--ink)">${a.actionId} · $${a.amount.toLocaleString()} ${a.asset}${a.toAsset?' → '+a.toAsset:''}</span>
+      <span style="margin-left:auto;font-size:11px;color:var(--muted)">${(a.timestamp||'').substring(11,16)} UTC</span>
+      <span style="font-size:11px;color:var(--green);font-weight:600">✓ On-chain</span>
+    </div>
+    <div class="action-body">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">AI Rationale — Canton ledger · ${a.damlTx||''}</div>
+      <div class="rationale-box">${a.aiRationale||''}</div>
+      ${checks}
+      ${a.counterparty?`<div class="kv"><span class="k">Counterparty</span><span class="v">${a.counterparty} · ${a.callId||''}</span></div>`:''}
+      <div class="kv"><span class="k">Human approved</span><span class="v">${a.humanApproved?'Yes':'No — within session limits'}</span></div>
+    </div>`;
+    feed.appendChild(card);
   });
+}
+renderActions(window.MANDATE.agentActions);
+
+const raf=document.getElementById('reg-audit-full');
+if(raf) window.MANDATE.agentActions.forEach(a=>{
+  const isM=a.actionType==='MarginCallResponse';
+  const div=document.createElement('div'); div.className='action-card';
+  div.innerHTML=`<div class="action-head" onclick="this.parentElement.classList.toggle('open')">
+    <span class="action-type ${isM?'margincall':'rebalance'}">${isM?'MARGIN CALL':'REBALANCE'}</span>
+    <span style="font-size:13px;font-weight:500;color:var(--ink)">${a.actionId} · $${a.amount.toLocaleString()} ${a.asset}</span>
+    <span style="margin-left:auto;font-size:11px;color:var(--muted)">${(a.timestamp||'').substring(11,16)} UTC</span>
+    <span style="font-size:11px;color:var(--green);font-weight:600">✓ On-chain</span>
+  </div>
+  <div class="action-body">
+    <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">AI Rationale — Canton ledger · ${a.damlTx||''}</div>
+    <div class="rationale-box">${a.aiRationale||''}</div>
+    <div style="margin-top:10px;padding:8px;border-radius:8px;background:rgba(13,90,67,.06);font-size:12px;color:var(--muted)">⚠ Pool balance and full holdings are private to Bank A — Canton sub-transaction privacy enforced at protocol level.</div>
+  </div>`;
+  raf.appendChild(div);
+});
+
+const af=document.getElementById('activity-feed');
+const icons={action:'◆',session:'⊙',call:'↓',audit:'✎'};
+window.MANDATE.activity.forEach(a=>{
+  const r=document.createElement('div'); r.className='feed-item';
+  r.innerHTML=`<div class="feed-ico action">${icons[a.kind]||'·'}</div><div style="flex:1"><div class="ft">${a.label}</div><div class="fs">${a.sub}</div></div><div class="fd">${a.date}</div>`;
+  af.appendChild(r);
+});
+
+let paused=false;
+function setRole(role,btn){
+  document.querySelectorAll('.role-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('view-treasury').style.display=role==='treasury'?'':'none';
+  document.getElementById('view-compliance').style.display=role==='compliance'?'':'none';
+  document.getElementById('view-regulator').style.display=role==='regulator'?'':'none';
+}
+function togglePause(){
+  paused=!paused;
+  const btn=document.getElementById('pause-btn');
+  const st=document.getElementById('session-status');
+  if(paused){btn.textContent='▶ Resume Agent';st.textContent='Agent paused';st.style.color='#B57A10';}
+  else{btn.textContent='⏸ Pause Agent';st.textContent='Agent session live';st.style.color='var(--green)';}
+}
+function simulateMarginCall(){
+  const banner=document.getElementById('alert-banner');
+  const amt=[80000,120000,95000][Math.floor(Math.random()*3)];
+  const cpty=['Bank B','Clearinghouse Gamma'][Math.floor(Math.random()*2)];
+  const cid='MC-2026-00'+Math.floor(50+Math.random()*10);
+  banner.className='alert-banner show incoming';
+  banner.innerHTML=`<span style="font-size:16px">⚡</span><span>Margin Call Incoming — ${cid} · ${cpty} · $${amt.toLocaleString()} Cash · deadline 1h</span>`;
+  setTimeout(()=>{
+    banner.className='alert-banner show reasoning';
+    banner.innerHTML=`<span style="width:14px;height:14px;border:2px solid rgba(79,110,247,.3);border-top-color:#4F6EF7;border-radius:50%;display:inline-block;animation:spin .7s linear infinite"></span><span>Agent reasoning… checking limits against session AGT-2026-001</span>`;
+  },2000);
+  setTimeout(()=>{
+    banner.className='alert-banner show responded';
+    banner.innerHTML=`<span style="font-size:16px">✓</span><span>Responded — $${amt.toLocaleString()} Cash posted to ${cpty} · AgentAction created on Canton ledger</span>`;
+    const newA={actionId:'ACT-00'+Math.floor(3+Math.random()*10),actionType:'MarginCallResponse',amount:amt,asset:'Cash',counterparty:cpty,callId:cid,timestamp:new Date().toISOString(),aiRationale:`Margin call ${cid} from ${cpty} requires $${amt.toLocaleString()} Cash. Within margin call limit ($300K). Daily volume after: $${(430000+amt).toLocaleString()} / $2,000,000. Responding immediately.`,limitChecks:[{name:'margin_call_limit',checked:amt,allowed:300000},{name:'daily_volume_cap',checked:430000+amt,allowed:2000000}],humanApproved:false,damlTx:'TX-0x'+Math.random().toString(16).slice(2,10).toUpperCase()+'…'};
+    renderActions([newA,...window.MANDATE.agentActions]);
+  },5500);
+  setTimeout(()=>{banner.className='alert-banner';},10500);
+}
 </script>
 </body>
 </html>

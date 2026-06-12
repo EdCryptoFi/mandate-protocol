@@ -1,141 +1,236 @@
 /* ============================================================
-   MANDATE — Shared fund data model (global: window.MANDATE)
-   A fictional VC platform fund. Numbers are internally consistent.
+   MANDATE PROTOCOL — Treasury data model (global: window.MANDATE)
+   Institution: Bank A — Global Treasury · Canton Sandbox
    ============================================================ */
 window.MANDATE = (function () {
-  const sectorColors = {
-    'Fintech':'#0D5A43','AI/ML':'#11C988','Infra':'#2F6E8F','Crypto':'#6A4A7A',
-    'Bio':'#B5764A','Consumer':'#9A7A3C','Climate':'#5C7A3C',
+
+  // ---- Institution ----
+  const institution = {
+    name: 'Bank A — Global Treasury',
+    party: 'BankA',
+    network: 'Canton Sandbox',
+    counterparties: ['Bank B — Fixed Income', 'Clearinghouse Gamma'],
   };
 
-  // ---- Fund-level (Mandate Fund III) ----
-  const fund = {
-    name: 'Mandate Fund III',
-    vintage: 2021,
-    strategy: 'Early-growth · Series A–B',
-    committed: 640,      // $M
-    called: 486,         // $M
-    deployed: 452,       // $M
-    reserved: 88,        // $M follow-on reserves
-    nav: 1184,           // $M current portfolio value
-    distributed: 214,    // $M returned to LPs
-    tvpi: 2.88,
-    dpi: 0.44,
-    rvpi: 2.44,
-    moic: 2.62,          // gross
-    netIrr: 31.4,        // %
-    grossIrr: 38.2,
-    companies: 34,
-    realized: 6,
+  // ---- Collateral Pool ----
+  const pool = {
+    poolId: 'POOL-BANKA-001',
+    totalValue: 5200000,
+    utilization: 32,
+    locked: 1664000,
   };
 
-  // ---- NAV / value over time (quarterly) ----
-  const navSeries = [
-    { t:'Q1 21', nav:42, called:64, dist:0 },
-    { t:'Q3 21', nav:118, called:150, dist:0 },
-    { t:'Q1 22', nav:236, called:228, dist:0 },
-    { t:'Q3 22', nav:318, called:286, dist:8 },
-    { t:'Q1 23', nav:402, called:336, dist:22 },
-    { t:'Q3 23', nav:548, called:372, dist:46 },
-    { t:'Q1 24', nav:712, called:410, dist:88 },
-    { t:'Q3 24', nav:884, called:442, dist:132 },
-    { t:'Q1 25', nav:1024, called:468, dist:176 },
-    { t:'Q3 25', nav:1184, called:486, dist:214 },
-  ];
-
-  // ---- J-curve (cumulative net cashflow to LPs, $M) ----
-  const jcurve = [
-    { t:'21', value:-64 }, { t:'', value:-150 }, { t:'22', value:-220 },
-    { t:'', value:-278 }, { t:'23', value:-314 }, { t:'', value:-326 },
-    { t:'24', value:-290 }, { t:'', value:-180 }, { t:'25', value:-40 },
-    { t:'26E', value:120 }, { t:'27E', value:380 }, { t:'28E', value:640 },
-  ];
-
-  // ---- Allocation by sector ($M deployed) ----
-  const allocation = [
-    { label:'AI/ML',    value:128, color:sectorColors['AI/ML'] },
-    { label:'Fintech',  value:104, color:sectorColors['Fintech'] },
-    { label:'Infra',    value:78,  color:sectorColors['Infra'] },
-    { label:'Crypto',   value:58,  color:sectorColors['Crypto'] },
-    { label:'Bio',      value:42,  color:sectorColors['Bio'] },
-    { label:'Climate',  value:26,  color:sectorColors['Climate'] },
-    { label:'Consumer', value:16,  color:sectorColors['Consumer'] },
-  ];
-
-  // ---- Capital deployed gauge ----
-  const capital = [
-    { label:'Deployed', value:452, color:'#0D5A43' },
-    { label:'Reserved', value:88,  color:'#11C988' },
-    { label:'Dry powder', value:100, color:'#D6F2E6' },
-  ];
-
-  // ---- Value-creation waterfall ($M, gross) ----
-  const waterfall = [
-    { label:'Cost', value:452, type:'base' },
-    { label:'Helix', value:186, type:'pos' },
-    { label:'Ledgerline', value:142, type:'pos' },
-    { label:'Quanta', value:98, type:'pos' },
-    { label:'Northwind', value:64, type:'pos' },
-    { label:'Markdowns', value:-58, type:'neg' },
-    { label:'Others', value:300, type:'pos' },
-    { label:'NAV', value:1184, type:'total' },
-  ];
-
-  // ---- Cohort / vintage heatmap (MOIC by stage) ----
-  const cohort = {
-    cols:['Seed','Series A','Series B','Growth'],
-    rows:[
-      { vintage:'2021', cells:[{label:'4.1×',value:4.1},{label:'3.2×',value:3.2},{label:'2.4×',value:2.4},{label:'1.8×',value:1.8}] },
-      { vintage:'2022', cells:[{label:'3.4×',value:3.4},{label:'2.8×',value:2.8},{label:'2.1×',value:2.1},{label:'1.6×',value:1.6}] },
-      { vintage:'2023', cells:[{label:'2.6×',value:2.6},{label:'2.2×',value:2.2},{label:'1.7×',value:1.7},{label:'1.3×',value:1.3}] },
-      { vintage:'2024', cells:[{label:'1.9×',value:1.9},{label:'1.5×',value:1.5},{label:'1.2×',value:1.2},{label:'1.1×',value:1.1}] },
-    ],
+  // ---- Session ----
+  const session = {
+    sessionId: 'AGT-2026-001',
+    status: 'live',
+    expiresIn: '8h 12m',
+    role: 'Treasury Manager',
+    permittedChoices: ['CanRebalance', 'CanRespondToMarginCall', 'CanPostCollateral'],
+    dailyVolumeCap: 2000000,
+    dailyVolumeUsed: 430000,
+    marginCallCap: 300000,
+    marginCallUsed: 180000,
+    singleActionCap: 500000,
+    actionsToday: 2,
   };
 
-  // ---- Portfolio companies ----
-  const companies = [
-    { id:'helix', name:'Helix Labs', sector:'AI/ML', stage:'Series B', geo:'San Francisco', invested:24, round:'2021', ownership:14.2, value:118, moic:4.9, irr:62, status:'live', desc:'Inference infrastructure for regulated enterprises.' },
-    { id:'ledgerline', name:'Ledgerline', sector:'Fintech', stage:'Series B', geo:'New York', invested:22, round:'2021', ownership:11.8, value:96, moic:4.4, irr:54, status:'live', desc:'Real-time settlement rails on Canton.' },
-    { id:'quanta', name:'Quanta', sector:'Infra', stage:'Series A', geo:'London', invested:16, round:'2022', ownership:13.4, value:62, moic:3.9, irr:48, status:'live', desc:'Confidential compute for financial data.' },
-    { id:'northwind', name:'Northwind', sector:'Climate', stage:'Series B', geo:'Berlin', invested:18, round:'2022', ownership:9.6, value:58, moic:3.2, irr:41, status:'live', desc:'Grid-scale storage orchestration.' },
-    { id:'aperture', name:'Aperture', sector:'AI/ML', stage:'Series A', geo:'Toronto', invested:14, round:'2022', ownership:12.1, value:44, moic:3.1, irr:39, status:'live', desc:'Synthetic data for model evaluation.' },
-    { id:'meridian', name:'Meridian Bio', sector:'Bio', stage:'Series B', geo:'Boston', invested:20, round:'2021', ownership:8.3, value:52, moic:2.6, irr:33, status:'live', desc:'Protein design platform.' },
-    { id:'cobalt', name:'Cobalt', sector:'Crypto', stage:'Series A', geo:'Singapore', invested:12, round:'2023', ownership:10.7, value:34, moic:2.8, irr:44, status:'live', desc:'Institutional custody on privacy ledgers.' },
-    { id:'fathom', name:'Fathom', sector:'Fintech', stage:'Series A', geo:'New York', invested:13, round:'2023', ownership:11.2, value:31, moic:2.4, irr:36, status:'live', desc:'Underwriting copilots for private credit.' },
-    { id:'tessel', name:'Tessel', sector:'Infra', stage:'Seed', geo:'Austin', invested:6, round:'2023', ownership:9.0, value:18, moic:3.0, irr:51, status:'live', desc:'Edge orchestration for fleets.' },
-    { id:'voyager', name:'Voyager', sector:'Consumer', stage:'Series A', geo:'Los Angeles', invested:11, round:'2022', ownership:7.4, value:9, moic:0.8, irr:-9, status:'watch', desc:'Creator commerce network.' },
-    { id:'solene', name:'Solène', sector:'Climate', stage:'Seed', geo:'Paris', invested:5, round:'2024', ownership:8.8, value:8, moic:1.6, irr:28, status:'live', desc:'Carbon accounting for supply chains.' },
-    { id:'argon', name:'Argon', sector:'Crypto', stage:'Seed', geo:'Zurich', invested:7, round:'2024', ownership:10.0, value:12, moic:1.7, irr:31, status:'live', desc:'Zero-knowledge compliance tooling.' },
+  // ---- Holdings (for donut chart) ----
+  const holdings = [
+    { label: 'Bond',      value: 1976000, pct: 38, target: 38, color: '#0D5A43' },
+    { label: 'Treasury',  value: 1456000, pct: 28, target: 30, color: '#11C988' },
+    { label: 'Cash',      value: 988000,  pct: 19, target: 10, color: '#2F6E8F' },
+    { label: 'Equity',    value: 572000,  pct: 11, target: 12, color: '#6A4A7A' },
+    { label: 'Commodity', value: 208000,  pct: 4,  target: 10, color: '#9A7A3C' },
   ];
 
-  // ---- Deal pipeline ----
-  const pipeline = [
-    { name:'Cipher', sector:'Crypto', stage:'Series A', ask:18, geo:'Singapore', status:'IC review', lead:'A. Mensah', score:88, date:'Jun 09' },
-    { name:'Brightwell', sector:'Bio', stage:'Series B', ask:25, geo:'Boston', status:'Diligence', lead:'R. Okafor', score:82, date:'Jun 07' },
-    { name:'Latch', sector:'Fintech', stage:'Seed', ask:6, geo:'New York', status:'Partner mtg', lead:'S. Vance', score:79, date:'Jun 05' },
-    { name:'Orbital', sector:'Infra', stage:'Series A', ask:15, geo:'London', status:'Term sheet', lead:'A. Mensah', score:91, date:'Jun 03' },
-    { name:'Pallas', sector:'AI/ML', stage:'Series A', ask:20, geo:'Berlin', status:'Sourced', lead:'D. Reyes', score:74, date:'Jun 02' },
+  // ---- Pool value series (quarterly, for NAV-style chart) ----
+  const poolSeries = [
+    { t:'Q1 2025', nav:4100000, volume:180000, actions:1 },
+    { t:'Q2 2025', nav:4350000, volume:210000, actions:2 },
+    { t:'Q3 2025', nav:4580000, volume:195000, actions:1 },
+    { t:'Q4 2025', nav:4820000, volume:340000, actions:3 },
+    { t:'Q1 2026', nav:5050000, volume:380000, actions:2 },
+    { t:'Q2 2026', nav:5200000, volume:430000, actions:2 },
   ];
 
-  // ---- LPs ----
-  const lps = [
-    { name:'Calderon Endowment', type:'Endowment', committed:120, called:91, distributed:40, dpi:0.44 },
-    { name:'Sequoia Pension Trust', type:'Pension', committed:100, called:76, distributed:33, dpi:0.43 },
-    { name:'Hanover Family Office', type:'Family office', committed:80, called:61, distributed:27, dpi:0.44 },
-    { name:'Meridian Sovereign', type:'Sovereign', committed:140, called:106, distributed:47, dpi:0.44 },
-    { name:'Brandt Foundation', type:'Foundation', committed:60, called:46, distributed:20, dpi:0.43 },
-    { name:'Westgate Insurance', type:'Insurance', committed:90, called:68, distributed:30, dpi:0.44 },
-    { name:'Aria Fund of Funds', type:'FoF', committed:50, called:38, distributed:17, dpi:0.45 },
+  // ---- Volume chart (intraday) ----
+  const volumeSeries = [
+    { time:'09:00', volume:0 },
+    { time:'10:00', volume:100000 },
+    { time:'11:00', volume:250000 },
+    { time:'12:00', volume:250000 },
+    { time:'13:00', volume:430000 },
+    { time:'Now',   volume:430000 },
   ];
 
-  // ---- Capital activity feed ----
+  // ---- Agent Actions (on-chain audit log) ----
+  const agentActions = [
+    {
+      actionId: 'ACT-001',
+      actionType: 'Rebalance',
+      amount: 250000,
+      asset: 'Bond',
+      toAsset: 'Treasury',
+      timestamp: '2026-06-12T10:32:00Z',
+      aiRationale: 'Portfolio drift detected. Bond at 42.1% exceeds target 38% by 4.1 pp. Rebalancing $250K Bond → Treasury restores target allocation. Daily volume remaining: $1.75M. Single action cap: $500K. All limits satisfied. Confidence: 94%.',
+      limitChecks: [
+        { name: 'single_action_cap', checked: 250000, allowed: 500000, passed: true },
+        { name: 'daily_volume_cap',  checked: 250000, allowed: 2000000, passed: true },
+        { name: 'asset_allowed',     passed: true },
+      ],
+      humanApproved: false,
+      damlTx: 'TX-0xA3F2…8C4E',
+    },
+    {
+      actionId: 'ACT-002',
+      actionType: 'MarginCallResponse',
+      amount: 180000,
+      asset: 'Cash',
+      counterparty: 'Bank B',
+      callId: 'MC-2026-0042',
+      timestamp: '2026-06-12T12:47:00Z',
+      aiRationale: 'Margin call MC-2026-0042 from Bank B requires $180K Cash by 16:00 UTC. Penalty $22K if defaulted. Pool holds $988K Cash (utilization 18.9%). Margin call limit: $300K — amount within. Responding immediately to avoid penalty.',
+      limitChecks: [
+        { name: 'margin_call_limit', checked: 180000, allowed: 300000, passed: true },
+        { name: 'single_action_cap', checked: 180000, allowed: 500000, passed: true },
+        { name: 'daily_volume_cap',  checked: 430000, allowed: 2000000, passed: true },
+      ],
+      humanApproved: false,
+      damlTx: 'TX-0xB7D1…2A9F',
+    },
+  ];
+
+  // ---- Mandate layers (for Fund/Mandate page) ----
+  const mandateLayers = [
+    {
+      num: 'I',
+      who: 'CEO + CFO',
+      title: 'Institution Mandate',
+      desc: 'The constitutional ceiling. Defines which assets, which counterparties, and the absolute maximum volumes. Requires two signatures. Cannot be exceeded by anyone — not even the CEO.',
+      assets: ['Bond', 'Treasury', 'Cash', 'Equity', 'Commodity'],
+      counterparties: ['BankB', 'Clearinghouse Gamma'],
+      maxSingleAction: 500000,
+      maxDailyVolume: 2000000,
+      expiry: '2026-12-31',
+    },
+    {
+      num: 'II',
+      who: 'Compliance + Treasury',
+      title: 'Operational Mandate',
+      desc: 'Day-to-day risk parameters: target allocations, rebalance thresholds, margin call limits. Can only tighten the Institution Mandate, never loosen it.',
+      allocationTargets: { Bond: 38, Treasury: 30, Cash: 10, Equity: 12, Commodity: 10 },
+      rebalanceThreshold: 5,
+      marginCallLimit: 300000,
+    },
+    {
+      num: 'III',
+      who: 'Treasury Manager',
+      title: 'Agent Session',
+      desc: 'A time-limited token specifying exactly which actions are permitted today. Expires automatically. The AI agent operates exclusively within this layer.',
+      sessionId: 'AGT-2026-001',
+      expiresIn: '8h 12m',
+      permittedChoices: ['CanRebalance', 'CanRespondToMarginCall', 'CanPostCollateral'],
+    },
+  ];
+
+  // ---- Daml test results ----
+  const damlTests = [
+    { step: 1,  label: 'Institution Mandate created with multi-sig', pass: true },
+    { step: 2,  label: 'Operational Mandate issued (compliance + treasury)', pass: true },
+    { step: 3,  label: 'Agent Session issued with permitted choices', pass: true },
+    { step: 4,  label: 'Agent executes rebalance within limits', pass: true },
+    { step: 5,  label: 'AgentAction audit log verified on-chain', pass: true },
+    { step: 6,  label: 'Counterparty sends margin call', pass: true },
+    { step: 7,  label: 'Agent responds to margin call automatically', pass: true },
+    { step: 8,  label: 'Margin call closed successfully', pass: true },
+    { step: 9,  label: 'Session volume usage tracked correctly', pass: true },
+    { step: 10, label: 'Over-limit action rejected by ledger ✓', pass: true, highlight: true },
+    { step: 11, label: 'Disallowed asset rejected by ledger ✓', pass: true, highlight: true },
+    { step: 12, label: 'Cross-institution DVP settled atomically', pass: true },
+  ];
+
+  // ---- Counterparties / Institutions ----
+  const counterparties = [
+    { name: 'Bank B — Fixed Income',   party: 'BankB',          type: 'Institution', status: 'active', openCalls: 1, totalSettled: 3 },
+    { name: 'Clearinghouse Gamma',     party: 'Clearinghouse',  type: 'Clearinghouse', status: 'active', openCalls: 0, totalSettled: 7 },
+    { name: 'Bank C — Asset Mgmt',     party: 'BankC',          type: 'Institution', status: 'pending', openCalls: 0, totalSettled: 0 },
+  ];
+
+  // ---- Activity feed ----
   const activity = [
-    { kind:'call', label:'Capital Call #11 issued', sub:'$28.0M · all LPs · 8.9% of commitments', amt:28, date:'Jun 10', state:'pending' },
-    { kind:'invest', label:'Follow-on · Helix Labs Series B', sub:'$8.0M from reserves · ownership 14.2%', amt:8, date:'Jun 08', state:'settled' },
-    { kind:'dist', label:'Distribution · Ledgerline secondary', sub:'$22.0M returned · DPI +0.03', amt:22, date:'Jun 02', state:'settled' },
-    { kind:'invest', label:'New position · Cobalt Series A', sub:'$12.0M · 10.7% ownership', amt:12, date:'May 28', state:'settled' },
-    { kind:'call', label:'Capital Call #10 settled', sub:'$24.0M · 96 LPs · fully funded', amt:24, date:'May 14', state:'settled' },
+    { kind: 'action', label: 'ACT-002 · MarginCallResponse executed', sub: '$180K Cash posted to Bank B · on-chain', date: '12:47 UTC', icon: '◆' },
+    { kind: 'action', label: 'ACT-001 · Rebalance executed', sub: '$250K Bond → Treasury · limits checked', date: '10:32 UTC', icon: '⟳' },
+    { kind: 'session', label: 'Agent Session AGT-2026-001 issued', sub: 'Treasury Manager · 8h duration · 3 permissions', date: '09:01 UTC', icon: '⊙' },
+    { kind: 'call', label: 'Margin call MC-2026-0042 received', sub: 'Bank B · $180K Cash · deadline 16:00 UTC', date: '12:44 UTC', icon: '↓' },
+    { kind: 'audit', label: 'Operational Mandate updated', sub: 'Compliance Officer · rebalance threshold 5% → 4%', date: 'Yesterday', icon: '✎' },
   ];
 
-  return { fund, navSeries, jcurve, allocation, capital, waterfall, cohort, companies, pipeline, lps, activity, sectorColors };
+  // ---- LP / Regulator view roles ----
+  const roles = [
+    { id: 'treasury',   label: 'Treasury Manager',   desc: 'Issue agent sessions, set operational limits',    institution: 'Bank A' },
+    { id: 'compliance', label: 'Compliance Officer',  desc: 'Monitor actions, approve limit changes',          institution: 'Bank A' },
+    { id: 'regulator',  label: 'Regulator',           desc: 'Read-only audit view across all institutions',    institution: 'All' },
+  ];
+
+  // ---- J-curve reused for Volume-over-time (cumulative) ----
+  const jcurve = [
+    { t:'Jan 2025', v:-80000 }, { t:'Feb 2025', v:-150000 }, { t:'Mar 2025', v:-100000 },
+    { t:'Apr 2025', v: 20000 }, { t:'May 2025', v: 80000  }, { t:'Jun 2025', v:120000  },
+    { t:'Jul 2025', v:200000 }, { t:'Aug 2025', v:260000  }, { t:'Sep 2025', v:310000  },
+    { t:'Oct 2025', v:380000 }, { t:'Nov 2025', v:410000  }, { t:'Dec 2025', v:430000  },
+  ];
+
+  // navSeries alias for chart compatibility
+  const navSeries = poolSeries.map(d => ({
+    t: d.t,
+    nav: d.nav,
+    called: d.volume,
+    dist: Math.round(d.actions * 50000),
+  }));
+
+  // allocation alias (sector donut → holdings donut)
+  const allocation = holdings.map(h => ({ label: h.label, value: h.value, color: h.color }));
+
+  return {
+    institution, pool, session, holdings, poolSeries, volumeSeries,
+    agentActions, mandateLayers, damlTests, counterparties, activity, roles,
+    jcurve, navSeries, allocation,
+    // fund-level for landing chart compatibility
+    fund: {
+      name: 'Mandate Protocol', nav: 5200000, tvpi: 0, dpi: 0,
+      committed: 5200000, deployed: 1664000, companies: 3,
+    },
+    lps: counterparties.map((c, i) => ({
+      name: c.name, type: c.type,
+      committed: [200, 150, 80][i], called: [180, 130, 0][i],
+      distributed: [20, 15, 0][i], dpi: [0.11, 0.12, 0][i],
+    })),
+    capital: [
+      { label: 'Bond',     value: 1976000, color: '#0D5A43' },
+      { label: 'Treasury', value: 1456000, color: '#11C988' },
+      { label: 'Cash',     value: 988000,  color: '#2F6E8F' },
+    ],
+    waterfall: [
+      { label:'Pool Value',  value:5200, base:0, color:'#0D5A43', type:'total'  },
+      { label:'Bond',        value:1976, base:0, color:'#0D5A43', type:'up'     },
+      { label:'Treasury',    value:1456, base:1976, color:'#11C988', type:'up'  },
+      { label:'Cash',        value:988,  base:3432, color:'#2F6E8F', type:'up'  },
+      { label:'Equity',      value:572,  base:4420, color:'#6A4A7A', type:'up'  },
+      { label:'Commodity',   value:208,  base:4992, color:'#9A7A3C', type:'up'  },
+      { label:'Locked',      value:-1664,base:5200, color:'#EF4444', type:'down'},
+      { label:'Free',        value:3536, base:0, color:'#11C988', type:'total'  },
+    ],
+    cohort: [
+      [0.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0, 0.0],
+    ],
+    pipeline: agentActions.map(a => ({
+      id: a.actionId, name: a.actionType, stage: 'Executed',
+      amount: a.amount, score: 95, lead: 'Agent',
+    })),
+    companies: agentActions,
+  };
 })();

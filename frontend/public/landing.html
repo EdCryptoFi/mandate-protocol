@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Mandate — Capital Operating System on Canton</title>
-<meta name="description" content="AI-native fund operations with cryptographic authority limits enforced by Daml on Canton Network. Deal flow, capital calls, and LP reporting — on-chain."/>
+<title>Mandate Protocol — Autonomous Treasury Intelligence on Canton</title>
+<meta name="description" content="An AI agent that manages institutional collateral and responds to margin calls — with authority limits enforced by the Canton Network ledger, not by trust. Built on Daml."/>
 <link rel="stylesheet" href="assets/theme.css"/>
 <script type="importmap">
 { "imports": { "three": "https://unpkg.com/three@0.160.1/build/three.module.js" } }
@@ -160,12 +160,12 @@
     <nav class="nav-links">
       <a href="#authority">Authority</a>
       <a href="#operations">Operations</a>
-      <a href="#performance">Performance</a>
-      <a href="#reach">Reach</a>
+      <a href="#performance">How it works</a>
+      <a href="#reach">Security</a>
     </nav>
     <div class="nav-cta">
-      <a href="app/Dashboard.html" class="nav-links" style="display:flex"><span style="font-size:14px;color:var(--ink-2)">Sign in</span></a>
-      <a href="app/Dashboard.html" class="btn btn-primary btn-sm">Access Platform
+      <a href="/login" class="nav-links" style="display:flex"><span style="font-size:14px;color:var(--ink-2)">Sign in</span></a>
+      <a href="/login" class="btn btn-primary btn-sm">Access Platform
         <svg class="ico" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
     </div>
@@ -177,11 +177,11 @@
   <div class="hero-canvas-wrap"><canvas id="hero-canvas"></canvas></div>
   <div class="wrap hero-grid">
     <div>
-      <span class="pill"><span class="dot"></span>Capital OS · Canton Network</span>
-      <h1 class="display hero-h1" style="margin-top:22px">Where capital <em>compounds.</em><br/>Within the mandate you <em>define.</em></h1>
-      <p class="lede hero-sub">An AI-native operating system for venture funds — sourcing, allocation, capital calls and LP reporting, with every authority limit enforced by the Canton ledger, not by trust.</p>
+      <span class="pill"><span class="dot"></span>Agentic Commerce · Canton Hackathon 2026</span>
+      <h1 class="display hero-h1" style="margin-top:22px">Where treasury <em>flows.</em><br/>Within limits you <em>define.</em></h1>
+      <p class="lede hero-sub">An AI agent that manages institutional collateral and responds to margin calls — with authority limits enforced by the Canton Network ledger, not by trust.</p>
       <div class="hero-actions">
-        <a href="app/Dashboard.html" class="btn btn-primary">Access Platform
+        <a href="/login" class="btn btn-primary">Access Dashboard
           <svg class="ico" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
         <a href="#authority" class="link-arrow">See how it works
@@ -191,13 +191,13 @@
     </div>
     <div class="hero-floats">
       <div class="float-chip fc-1">
-        <div class="fk">Net IRR</div><div class="fv num">31.4%</div>
+        <div class="fk">Pool Value</div><div class="fv num">$5.2M</div>
       </div>
       <div class="float-chip fc-2">
-        <div class="fk">TVPI</div><div class="fv num">2.88×</div>
+        <div class="fk">Agent Actions</div><div class="fv num">2 today</div>
       </div>
       <div class="float-chip fc-3">
-        <div class="fk">Portfolio NAV</div><div class="fv num">$1.18B</div>
+        <div class="fk">Session</div><div class="fv num">8h live</div>
       </div>
     </div>
   </div>
@@ -206,11 +206,11 @@
 <!-- STAT STRIP -->
 <section class="strip">
   <div class="wrap"><div class="strip-inner">
-    <div class="strip-cell"><div class="sk">Committed capital</div><div class="sv num">$640M</div><div class="sd mut">Fund III · vintage 2021</div></div>
-    <div class="strip-cell"><div class="sk">Deployed</div><div class="sv num">$452M</div><div class="sd green">71% of called</div></div>
-    <div class="strip-cell"><div class="sk">Gross MOIC</div><div class="sv num">2.62×</div><div class="sd green">▲ 0.14 QoQ</div></div>
-    <div class="strip-cell"><div class="sk">DPI</div><div class="sv num">0.44×</div><div class="sd mut">$214M distributed</div></div>
-    <div class="strip-cell"><div class="sk">Active positions</div><div class="sv num">34</div><div class="sd mut">6 realized</div></div>
+    <div class="strip-cell"><div class="sk">On-chain enforcement</div><div class="sv num">Protocol</div><div class="sd green">Ledger rejects violations</div></div>
+    <div class="strip-cell"><div class="sk">AI decisions logged</div><div class="sv num">100%</div><div class="sd green">Immutable audit trail</div></div>
+    <div class="strip-cell"><div class="sk">Privacy model</div><div class="sv num">Sub-tx</div><div class="sd mut">Canton native</div></div>
+    <div class="strip-cell"><div class="sk">Daml e2e tests</div><div class="sv num">12 / 12</div><div class="sd green">All passing</div></div>
+    <div class="strip-cell"><div class="sk">Hackathon tracks</div><div class="sv num">4</div><div class="sd mut">Private DeFi · RWA · Payments · Agentic</div></div>
   </div></div>
 </section>
 
@@ -219,8 +219,8 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">Core Properties</span>
-      <h2 class="serif">Conviction without the <em>blind spots.</em></h2>
-      <p class="lede">Privacy and auditability. Autonomy and control. Mandate gives a fund both at once — positions stay private, decisions stay provable, and authority is enforced by the protocol.</p>
+      <h2 class="serif">Autonomy without the <em>blind spots.</em></h2>
+      <p class="lede">Privacy and auditability. Autonomy and control. Mandate Protocol delivers both at once — positions stay private, decisions stay provable, and authority is enforced by the ledger, not by trust.</p>
     </div>
     <div class="grid cols-3 props">
       <div class="card prop-card card-hover reveal">
@@ -230,8 +230,8 @@
       </div>
       <div class="card prop-card card-hover reveal">
         <div class="prop-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 10V7a4 4 0 018 0v3" stroke="currentColor" stroke-width="1.6"/></svg></div>
-        <h3 class="serif">Privacy fit for LPs.</h3>
-        <p>Co-investors never see your full book. LPs see their slice and the fund's decisions — not other positions. Canton's sub-transaction privacy enforces both, simultaneously.</p>
+        <h3 class="serif">Privacy fit for regulators.</h3>
+        <p>Counterparties never see your full positions. Regulators see AI decisions and reasoning — not your balances. Canton's sub-transaction privacy enforces both, simultaneously.</p>
       </div>
       <div class="card prop-card card-hover reveal">
         <div class="prop-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 4h11l3 3v13H5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 11h8M8 15h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
@@ -254,32 +254,32 @@
       <div class="auth-row reveal">
         <div class="auth-num">I</div>
         <div>
-          <div class="auth-who">General Partners · LPA</div>
-          <div class="auth-title">Fund Mandate</div>
-          <div class="auth-desc">The constitutional ceiling from the Limited Partnership Agreement — eligible sectors, geographies, concentration limits and the absolute commitment ceiling. Cannot be exceeded by anyone.</div>
+          <div class="auth-who">CEO + CFO · two signatures required</div>
+          <div class="auth-title">Institution Mandate</div>
+          <div class="auth-desc">The constitutional ceiling. Defines which assets, which counterparties, and the absolute maximum volumes. Cannot be exceeded by anyone — not even the CEO.</div>
         </div>
       </div>
       <div class="auth-row reveal">
         <div class="auth-num">II</div>
         <div>
-          <div class="auth-who">Investment Committee</div>
-          <div class="auth-title">Allocation Policy</div>
-          <div class="auth-desc">Day-to-day risk parameters: target allocations, reserve ratios, single-deal limits and pacing thresholds. Can only tighten the Fund Mandate, never loosen it.</div>
+          <div class="auth-who">Compliance Officer + Treasury Manager</div>
+          <div class="auth-title">Operational Mandate</div>
+          <div class="auth-desc">Day-to-day risk parameters: target allocations, rebalance thresholds, margin call limits. Can only tighten the Institution Mandate — never loosen it.</div>
         </div>
       </div>
       <div class="auth-row reveal">
         <div class="auth-num">III</div>
         <div>
-          <div class="auth-who">Portfolio Manager</div>
-          <div class="auth-title">Deal Session</div>
-          <div class="auth-desc">A time-limited token specifying exactly which actions are permitted today — which checks to run, which reserves to draw, up to what size. Expires automatically.</div>
+          <div class="auth-who">Treasury Manager</div>
+          <div class="auth-title">Agent Session</div>
+          <div class="auth-desc">A time-limited token specifying exactly which actions are permitted today. Expires automatically. The AI agent operates exclusively within this layer.</div>
         </div>
       </div>
       <div class="auth-agent reveal">
         <div class="badge">AI</div>
         <div>
-          <div class="auth-who" style="margin-bottom:6px">Agent · operates within the mandate</div>
-          <div class="auth-desc" style="color:#BFE9D8">Monitors the pipeline and portfolio, reasons with Claude, and submits actions — only within its session limits. If any assertion fails, the Canton ledger rejects the transaction before it settles.</div>
+          <div class="auth-who" style="margin-bottom:6px">Agent · operates within the session only</div>
+          <div class="auth-desc" style="color:#BFE9D8">Monitors the ledger, reasons with Claude, and submits actions — only within its session limits. If any assertion fails, the Canton ledger rejects the transaction. The ledger is the enforcer.</div>
         </div>
       </div>
     </div>
@@ -293,10 +293,10 @@
       <div>
         <div class="sec-head reveal" style="margin-bottom:32px">
           <span class="eyebrow">Operations</span>
-          <h2 class="serif">Everything the <em>fund needs.</em></h2>
-          <p class="lede">From sourcing and reserves to capital calls and quarterly LP reporting — the agent handles routine operations autonomously and escalates the decisions that need human judgment.</p>
+          <h2 class="serif">Everything the <em>treasury needs.</em></h2>
+          <p class="lede">From daily rebalancing to emergency margin call responses — the agent handles routine operations autonomously and escalates the decisions that require human judgment.</p>
         </div>
-        <a href="app/Dashboard.html" class="btn btn-ghost">View the dashboard
+        <a href="/login" class="btn btn-ghost">View the dashboard
           <svg class="ico" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
         <div class="graph-panel reveal" style="margin-top:34px">
@@ -305,12 +305,12 @@
         </div>
       </div>
       <div class="ops-list">
-        <div class="op-card reveal"><span class="num-tag">01</span><h4>Deal Flow</h4><p>Score and route inbound deals. The agent ranks the pipeline against the fund thesis and escalates IC-ready opportunities.</p></div>
-        <div class="op-card reveal"><span class="num-tag">02</span><h4>Capital Calls</h4><p>Issue and reconcile LP calls in minutes. Each call is an on-chain contract — pro-rata, auditable, and instantly settled.</p></div>
-        <div class="op-card reveal"><span class="num-tag">03</span><h4>DVP Distributions</h4><p>Atomic delivery-versus-payment on exits. Both legs settle or neither does — across institutions, with no reconciliation.</p></div>
-        <div class="op-card reveal"><span class="num-tag">04</span><h4>Audit Trail</h4><p>Every action creates an immutable record with the agent's reasoning stored permanently on the Canton ledger.</p></div>
-        <div class="op-card reveal"><span class="num-tag">05</span><h4>Reserves</h4><p>Model follow-on reserves per company and draw them down within policy, never exceeding the IC ratio.</p></div>
-        <div class="op-card reveal"><span class="num-tag">06</span><h4>LP Reporting</h4><p>Quarterly statements generate from the ledger itself — DPI, TVPI and NAV, private to each LP.</p></div>
+        <div class="op-card reveal"><span class="num-tag">01</span><h4>Collateral Pools</h4><p>Monitor holdings across asset classes. Rebalance automatically when allocation drifts beyond the configured threshold.</p></div>
+        <div class="op-card reveal"><span class="num-tag">02</span><h4>Margin Calls</h4><p>Respond to incoming calls in milliseconds — within session limits. Escalate to humans when limits would be exceeded.</p></div>
+        <div class="op-card reveal"><span class="num-tag">03</span><h4>DVP Settlement</h4><p>Confirm atomic cross-institution delivery-vs-payment. Both legs settle or neither does — no reconciliation.</p></div>
+        <div class="op-card reveal"><span class="num-tag">04</span><h4>Audit Trail</h4><p>Every decision creates an immutable AgentAction with the AI's reasoning stored permanently on the Canton ledger.</p></div>
+        <div class="op-card reveal"><span class="num-tag">05</span><h4>Emergency Pause</h4><p>Any authorized party can pause the agent instantly. The session token is revoked — the ledger enforces the stop.</p></div>
+        <div class="op-card reveal"><span class="num-tag">06</span><h4>Regulator View</h4><p>Regulators see every AI decision and full reasoning — without ever seeing your pool balances. Protocol-level privacy.</p></div>
       </div>
     </div>
   </div>
@@ -321,24 +321,24 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">Performance</span>
-      <h2 class="serif">Numbers that reconcile <em>themselves.</em></h2>
-      <p class="lede">NAV, allocation and value creation flow straight from the ledger — no spreadsheets, no quarter-end scramble.</p>
+      <h2 class="serif">Every decision, <em>on-chain.</em></h2>
+      <p class="lede">Pool value, volume usage and AI actions flow straight from the Canton ledger — no reconciliation, no off-chain state, no trust required.</p>
     </div>
     <div class="showcase-grid">
       <div class="card chart-card reveal">
         <div class="ch-head">
-          <h4 class="serif">Portfolio value &amp; capital</h4>
+          <h4 class="serif">Pool value &amp; volume</h4>
           <span class="pill green"><span class="dot"></span>Live</span>
         </div>
         <div id="mount-nav"></div>
         <div class="legend">
-          <div class="li"><span class="sw" style="background:#0D5A43"></span>Portfolio NAV</div>
-          <div class="li"><span class="sw" style="background:#2F6E8F"></span>Capital called</div>
-          <div class="li"><span class="sw" style="background:#11C988"></span>Distributed to LPs</div>
+          <div class="li"><span class="sw" style="background:#0D5A43"></span>Pool Value</div>
+          <div class="li"><span class="sw" style="background:#2F6E8F"></span>Volume Used</div>
+          <div class="li"><span class="sw" style="background:#11C988"></span>Settled</div>
         </div>
       </div>
       <div class="card chart-card reveal" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
-        <div class="ch-head" style="width:100%"><h4 class="serif">Allocation</h4><span class="label-xs">by sector</span></div>
+        <div class="ch-head" style="width:100%"><h4 class="serif">Holdings</h4><span class="label-xs">by asset class</span></div>
         <div id="mount-donut" style="margin:8px 0 6px"></div>
         <div class="legend" id="donut-legend" style="justify-content:center"></div>
       </div>
@@ -352,13 +352,13 @@
     <div class="globe-wrap reveal"><canvas id="globe-canvas"></canvas></div>
     <div class="reveal">
       <span class="eyebrow">Reach</span>
-      <h2 class="serif" style="font-size:clamp(30px,3.4vw,44px);margin-top:14px">Deals, everywhere <em>capital moves.</em></h2>
-      <p class="lede" style="margin-top:16px">Mandate runs on a network designed for institutions that cross borders. Settlement is atomic and private, wherever the counterparty sits.</p>
+      <h2 class="serif" style="font-size:clamp(30px,3.4vw,44px);margin-top:14px">Settlements, wherever <em>institutions operate.</em></h2>
+      <p class="lede" style="margin-top:16px">Mandate Protocol runs on a network designed for institutions that cross borders. DVP settlement is atomic and private, wherever the counterparty sits.</p>
       <div class="hub-list" style="margin-top:24px">
-        <div class="hub-row"><div class="row gap-12"><span class="sdot live"></span><span style="font-weight:500">San Francisco · New York</span></div><span class="num mut">14 positions</span></div>
-        <div class="hub-row"><div class="row gap-12"><span class="sdot live"></span><span style="font-weight:500">London · Berlin</span></div><span class="num mut">9 positions</span></div>
-        <div class="hub-row"><div class="row gap-12"><span class="sdot live"></span><span style="font-weight:500">Singapore · Tokyo</span></div><span class="num mut">6 positions</span></div>
-        <div class="hub-row"><div class="row gap-12"><span class="sdot warn"></span><span style="font-weight:500">São Paulo · Mumbai</span></div><span class="num mut">5 sourcing</span></div>
+        <div class="hub-row"><div class="row gap-12"><span class="sdot live"></span><span style="font-weight:500">Bank A — Global Treasury</span></div><span class="num mut">Active · session live</span></div>
+        <div class="hub-row"><div class="row gap-12"><span class="sdot live"></span><span style="font-weight:500">Bank B — Fixed Income</span></div><span class="num mut">1 open margin call</span></div>
+        <div class="hub-row"><div class="row gap-12"><span class="sdot live"></span><span style="font-weight:500">Clearinghouse Gamma</span></div><span class="num mut">7 DVP settled</span></div>
+        <div class="hub-row"><div class="row gap-12"><span class="sdot warn"></span><span style="font-weight:500">Bank C — Asset Mgmt</span></div><span class="num mut">Pending onboarding</span></div>
       </div>
     </div>
   </div>
@@ -368,10 +368,10 @@
 <section class="section cta grain">
   <div class="wrap reveal">
     <span class="eyebrow">Get Started</span>
-    <h2 class="serif" style="margin-top:18px">Deploy with <em>conviction.</em></h2>
-    <p class="lede" style="color:#9FCDBC;max-width:34em;margin:18px auto 0">Set your mandate. Issue a session. Let the agent work — within exactly the limits you defined.</p>
+    <h2 class="serif" style="margin-top:18px">Delegate with <em>confidence.</em></h2>
+    <p class="lede" style="color:#9FCDBC;max-width:34em;margin:18px auto 0">Set your mandate. Issue a session. Let the agent work — within exactly the limits you defined. The ledger is the proof.</p>
     <div style="margin-top:34px;display:flex;gap:16px;justify-content:center">
-      <a href="app/Dashboard.html" class="btn btn-mint">Access Platform
+      <a href="/login" class="btn btn-mint">Access Platform
         <svg class="ico" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
       <a href="#" class="btn btn-ghost" style="color:#DCEEE6;border-color:rgba(255,255,255,0.24)">Talk to the team</a>
@@ -388,15 +388,15 @@
           <svg class="brand-mark" viewBox="0 0 24 24" fill="none"><path d="M3 8V4.5C3 3.67 3.67 3 4.5 3H8" stroke="#0D5A43" stroke-width="1.7" stroke-linecap="round"/><path d="M21 8V4.5C21 3.67 20.33 3 19.5 3H16" stroke="#0D5A43" stroke-width="1.7" stroke-linecap="round"/><path d="M3 16V19.5C3 20.33 3.67 21 4.5 21H8" stroke="#0D5A43" stroke-width="1.7" stroke-linecap="round"/><path d="M21 16V19.5C21 20.33 20.33 21 19.5 21H16" stroke="#0D5A43" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="3.4" fill="#11C988"/></svg>
           <span class="brand-name">Mandate</span>
         </div>
-        <p class="mut" style="font-size:14px;max-width:30em;line-height:1.55">The capital operating system for venture funds. Built on Canton Network with Daml + Claude.</p>
+        <p class="mut" style="font-size:14px;max-width:30em;line-height:1.55">Autonomous treasury intelligence with authority enforced by the Canton ledger. Built on Daml + Claude AI.</p>
       </div>
-      <div><h5>Platform</h5><a href="app/Dashboard.html">Dashboard</a><a href="app/Fund.html">Fund</a><a href="app/Deal.html">Deal flow</a><a href="app/LP.html">LP portal</a></div>
-      <div><h5>Company</h5><a href="#">About</a><a href="#">Security</a><a href="#">Careers</a><a href="#">Contact</a></div>
-      <div><h5>Resources</h5><a href="#">Docs</a><a href="#">Canton</a><a href="#">Daml</a><a href="#">Status</a></div>
+      <div><h5>Platform</h5><a href="/login">Dashboard</a><a href="app/Fund.html">Mandate Config</a><a href="app/Deal.html">Agent Sessions</a><a href="app/LP.html">Audit Trail</a></div>
+      <div><h5>Roles</h5><a href="/login">Treasury Manager</a><a href="/login">Compliance Officer</a><a href="/login">Regulator</a><a href="/login">CEO / CFO</a></div>
+      <div><h5>Resources</h5><a href="app/LP.html">User Guide</a><a href="https://github.com/EdCryptoFi/mandate-protocol" target="_blank" rel="noopener">GitHub</a><a href="https://www.canton.network" target="_blank" rel="noopener">Canton Network</a><a href="https://daml.com" target="_blank" rel="noopener">Daml</a></div>
     </div>
     <div class="footer-bottom">
-      <span>© 2026 Mandate · Built on Canton Network</span>
-      <span class="mono">Daml + Claude · Sub-transaction privacy</span>
+      <span>© 2026 Mandate Protocol · Build on Canton Hackathon</span>
+      <span class="mono">Daml 2.10 + Claude AI · Canton Sub-transaction privacy</span>
     </div>
   </div>
 </footer>
@@ -417,7 +417,7 @@ function HeroNav(){
 }
 function HeroDonut(){
   const [hi,setHi]=React.useState(null);
-  return <DonutChart data={M.allocation} size={230} thickness={30} centerValue="$452M" centerLabel="Deployed" onHover={setHi}/>;
+  return <DonutChart data={M.allocation} size={230} thickness={30} centerValue="$5.2M" centerLabel="Pool Value" onHover={setHi}/>;
 }
 ReactDOM.createRoot(document.getElementById('mount-nav')).render(<HeroNav/>);
 ReactDOM.createRoot(document.getElementById('mount-donut')).render(<HeroDonut/>);
@@ -434,7 +434,7 @@ M.allocation.forEach(a=>{ const d=document.createElement('div'); d.className='li
   portfolioGraph(document.getElementById('graph-canvas'), { clusters: 6, perCluster: 7 });
   globe(document.getElementById('globe-canvas'));
   // graph legend
-  const sectors = [['Fintech','#0D5A43'],['AI/ML','#11C988'],['Infra','#2F6E8F'],['Crypto','#6A4A7A'],['Bio','#B5764A'],['Climate','#9A7A3C']];
+  const sectors = [['Bond','#0D5A43'],['Treasury','#11C988'],['Cash','#2F6E8F'],['Equity','#6A4A7A'],['Commodity','#9A7A3C'],['BankB','#B5764A']];
   const gl = document.getElementById('graph-legend');
   sectors.forEach(([n,c])=>{ const d=document.createElement('div'); d.className='li';
     d.innerHTML=`<span style="width:8px;height:8px;border-radius:50%;background:${c};display:inline-block"></span>${n}`; gl.appendChild(d); });
