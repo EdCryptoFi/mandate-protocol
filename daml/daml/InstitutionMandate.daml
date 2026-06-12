@@ -1,0 +1,346 @@
+module InstitutionMandate where
+
+import Types
+import DA.List (elem)
+
+-- Layer 1: The constitutional authority contract.
+-- Signed by the institution's top leadership (CEO + CFO equivalent).
+-- Sets absolute ceilings that NO other contract can exceed.
+-- The regulator is an observer so they know the mandate exists,
+-- but cannot read the operational details (Canton sub-tx privacy).
+template InstitutionMandate
+  with
+    institution          : Party   -- the financial entity
+    complianceOfficer    : Party
+    agent                : Party   -- the AI agent's party
+    regulator            : Party
+    allowedAssets        : [AssetClass]
+    allowedCounterparties: [Party]
+    maxSingleActionUSD   : Decimal  -- hard cap per single operation
+    maxDailyVolumeUSD    : Decimal  -- hard cap on total daily volume
+    expiryDate           : Date
+    mandateId            : Text
+  where
+    signatory institution, complianceOfficer
+    observer regulator
+
+    ensure maxSingleActionUSD > 0.0
+        && maxDailyVolumeUSD >= maxSingleActionUSD
+        && maxSingleActionUSD <= maxDailyVolumeUSD
+
+    -- Institution can revoke the entire mandate immediately
+    choice Revoke : ()
+      controller institution
+      do return ()
+
+    -- Emergency pause by either institution or compliance
+    choice EmergencyPause : ContractId EmergencyPauseRecord
+      with reason : Text
+      controller institution
+      do create EmergencyPauseRecord with
+           institution
+           reason
+           pausedAt = mandateId
+
+    -- Issue an operational mandate (requires both institution + compliance)
+    choice IssueOperationalMandate : ContractId OperationalMandate
+      with
+        treasuryManager     : Party
+        targetAllocations   : [(AssetClass, Decimal)]  -- (asset, target %)
+        rebalanceThresholdPct : Decimal
+        marginCallResponseLimitUSD : Decimal
+      controller institution, complianceOfficer
+      do
+        assertMsg "margin call limit within single action cap"
+          (marginCallResponseLimitUSD <= maxSingleActionUSD)
+        assertMsg "rebalance threshold between 0-50%"
+          (rebalanceThresholdPct > 0.0 && rebalanceThresholdPct <= 50.0)
+        create OperationalMandate with
+          institution
+          complianceOfficer
+          treasuryManager
+          agent
+          regulator
+          parentMandateId = mandateId
+          targetAllocations
+          rebalanceThresholdPct
+          marginCallResponseLimitUSD
+          maxSingleActionUSD
+          maxDailyVolumeUSD
+          allowedAssets
+          allowedCounterparties
+          operationalMandateId = mandateId <> "-ops"
+
+
+-- Records an emergency pause for audit purposes
+template EmergencyPauseRecord
+  with
+    institution : Party
+    reason      : Text
+    pausedAt    : Text
+  where
+    signatory institution
+
+
+-- Layer 2: Operational parameters set by compliance + treasury.
+-- Can only tighten the Institution Mandate, never loosen it.
+template OperationalMandate
+  with
+    institution          : Party
+    complianceOfficer    : Party
+    treasuryManager      : Party
+    agent                : Party
+    regulator            : Party
+    parentMandateId      : Text
+    targetAllocations    : [(AssetClass, Decimal)]
+    rebalanceThresholdPct: Decimal
+    marginCallResponseLimitUSD : Decimal
+    maxSingleActionUSD   : Decimal  -- inherited ceiling from Layer 1
+    maxDailyVolumeUSD    : Decimal
+    allowedAssets        : [AssetClass]
+    allowedCounterparties: [Party]
+    operationalMandateId : Text
+  where
+    signatory institution, treasuryManager
+    observer complianceOfficer, agent
+
+    -- Treasury manager adjusts target allocations within compliance limits
+    choice AdjustAllocations : ContractId OperationalMandate
+      with newAllocations : [(AssetClass, Decimal)]
+      controller treasuryManager
+      do create this with targetAllocations = newAllocations
+
+    -- Tighten the margin call limit (only downward)
+    choice TightenMarginCallLimit : ContractId OperationalMandate
+      with newLimit : Decimal
+      controller complianceOfficer
+      do
+        assertMsg "can only tighten, not loosen"
+          (newLimit <= marginCallResponseLimitUSD)
+        create this with marginCallResponseLimitUSD = newLimit
+
+    -- Issue a time-limited agent session
+    choice IssueAgentSession : ContractId AgentSession
+      with
+        validForHours    : Int
+        permittedChoices : [ChoiceType]
+      controller treasuryManager
+      do
+        now <- getTime
+        create AgentSession with
+          institution
+          treasuryManager
+          agent
+          regulator
+          sessionId      = operationalMandateId <> "-session"
+          validForHours
+          permittedChoices
+          actionsUsedToday  = 0
+          volumeUsedTodayUSD = 0.0
+          maxSingleActionUSD
+          maxDailyVolumeUSD
+          marginCallResponseLimitUSD
+          allowedAssets
+          allowedCounterparties
+          issuedAt = now
+
+
+-- Layer 3: The agent's time-limited authority token.
+-- The ledger enforces every limit before any choice executes.
+template AgentSession
+  with
+    institution        : Party
+    treasuryManager    : Party
+    agent              : Party
+    regulator          : Party
+    sessionId          : Text
+    validForHours      : Int
+    permittedChoices   : [ChoiceType]
+    actionsUsedToday   : Int
+    volumeUsedTodayUSD : Decimal
+    maxSingleActionUSD : Decimal
+    maxDailyVolumeUSD  : Decimal
+    marginCallResponseLimitUSD : Decimal
+    allowedAssets      : [AssetClass]
+    allowedCounterparties : [Party]
+    issuedAt           : Time
+  where
+    signatory institution, treasuryManager
+    observer agent
+
+    -- Guard: checks all limits, returns updated volume tracker
+    nonconsuming choice CheckLimits : [LimitCheckResult]
+      with
+        actionType : ActionType
+        amount     : Decimal
+        asset      : AssetClass
+      controller agent
+      do
+        let singleOk  = amount <= maxSingleActionUSD
+            dailyOk   = (volumeUsedTodayUSD + amount) <= maxDailyVolumeUSD
+            assetOk   = asset `elem` allowedAssets
+        return
+          [ LimitCheckResult "single_action_cap" amount maxSingleActionUSD singleOk
+          , LimitCheckResult "daily_volume_cap" (volumeUsedTodayUSD + amount) maxDailyVolumeUSD dailyOk
+          , LimitCheckResult "asset_allowed" 1.0 (if assetOk then 1.0 else 0.0) assetOk
+          ]
+
+    -- Agent executes a rebalance
+    choice ExecuteRebalance : (ContractId AgentSession, ContractId AgentAction)
+      with
+        fromAsset    : AssetClass
+        toAsset      : AssetClass
+        amount       : Decimal
+        aiRationale  : Text
+      controller agent
+      do
+        assertMsg "session permits rebalance" (CanRebalance `elem` permittedChoices)
+        assertMsg "single action within cap" (amount <= maxSingleActionUSD)
+        assertMsg "daily volume within cap"  ((volumeUsedTodayUSD + amount) <= maxDailyVolumeUSD)
+        assertMsg "from asset allowed" (fromAsset `elem` allowedAssets)
+        assertMsg "to asset allowed"   (toAsset   `elem` allowedAssets)
+        now <- getTime
+        let checks =
+              [ LimitCheckResult "single_action_cap" amount maxSingleActionUSD True
+              , LimitCheckResult "daily_volume_cap" (volumeUsedTodayUSD + amount) maxDailyVolumeUSD True
+              ]
+        sessionCid <- create this with
+          actionsUsedToday   = actionsUsedToday + 1
+          volumeUsedTodayUSD = volumeUsedTodayUSD + amount
+        actionCid <- create AgentAction with
+          institution
+          agent
+          regulator
+          complianceOfficer = treasuryManager
+          actionId     = sessionId <> "-" <> show actionsUsedToday
+          sessionId
+          actionType   = Rebalance
+          amount
+          asset        = fromAsset
+          toAsset      = Some toAsset
+          timestamp    = now
+          aiRationale
+          limitChecks  = checks
+          humanApproved = False
+        return (sessionCid, actionCid)
+
+    -- Agent responds to a margin call
+    choice RespondToMarginCall : (ContractId AgentSession, ContractId AgentAction)
+      with
+        callId       : Text
+        amount       : Decimal
+        asset        : AssetClass
+        aiRationale  : Text
+      controller agent
+      do
+        assertMsg "session permits margin call response"
+          (CanRespondToMarginCall `elem` permittedChoices)
+        assertMsg "amount within margin call limit"
+          (amount <= marginCallResponseLimitUSD)
+        assertMsg "amount within single action cap"
+          (amount <= maxSingleActionUSD)
+        assertMsg "daily volume ok"
+          ((volumeUsedTodayUSD + amount) <= maxDailyVolumeUSD)
+        assertMsg "asset allowed" (asset `elem` allowedAssets)
+        now <- getTime
+        let checks =
+              [ LimitCheckResult "margin_call_limit" amount marginCallResponseLimitUSD True
+              , LimitCheckResult "single_action_cap" amount maxSingleActionUSD True
+              , LimitCheckResult "daily_volume_cap" (volumeUsedTodayUSD + amount) maxDailyVolumeUSD True
+              ]
+        sessionCid <- create this with
+          actionsUsedToday   = actionsUsedToday + 1
+          volumeUsedTodayUSD = volumeUsedTodayUSD + amount
+        actionCid <- create AgentAction with
+          institution
+          agent
+          regulator
+          complianceOfficer = treasuryManager
+          actionId     = sessionId <> "-mc-" <> callId
+          sessionId
+          actionType   = MarginCallResponse
+          amount
+          asset
+          toAsset      = None
+          timestamp    = now
+          aiRationale
+          limitChecks  = checks
+          humanApproved = False
+        return (sessionCid, actionCid)
+
+    -- Agent escalates to human when action would exceed limits
+    choice RequestHumanApproval : ContractId ApprovalRequest
+      with
+        reason          : Text
+        proposedAmount  : Decimal
+        proposedAsset   : AssetClass
+        proposedAction  : ActionType
+      controller agent
+      do
+        now <- getTime
+        create ApprovalRequest with
+          institution
+          treasuryManager
+          agent
+          requestId    = sessionId <> "-approval-" <> show actionsUsedToday
+          reason
+          proposedAmount
+          proposedAsset
+          proposedAction
+          requestedAt  = now
+          resolved     = False
+
+    -- Treasury manager or institution revokes the session immediately
+    choice RevokeSession : ()
+      controller institution
+      do return ()
+
+
+-- Immutable audit log entry — every agent action creates one.
+-- The AI's reasoning is stored on-chain alongside limit check results.
+-- Regulators and compliance can read this; counterparties cannot.
+template AgentAction
+  with
+    institution       : Party
+    agent             : Party
+    regulator         : Party
+    complianceOfficer : Party
+    actionId          : Text
+    sessionId         : Text
+    actionType        : ActionType
+    amount            : Decimal
+    asset             : AssetClass
+    toAsset           : Optional AssetClass
+    timestamp         : Time
+    aiRationale       : Text   -- AI reasoning stored on-chain
+    limitChecks       : [LimitCheckResult]
+    humanApproved     : Bool
+  where
+    signatory institution, agent
+    observer regulator, complianceOfficer
+
+
+-- Escalation request when agent needs human sign-off
+template ApprovalRequest
+  with
+    institution     : Party
+    treasuryManager : Party
+    agent           : Party
+    requestId       : Text
+    reason          : Text
+    proposedAmount  : Decimal
+    proposedAsset   : AssetClass
+    proposedAction  : ActionType
+    requestedAt     : Time
+    resolved        : Bool
+  where
+    signatory institution
+    observer treasuryManager, agent
+
+    choice Approve : ContractId ApprovalRequest
+      controller treasuryManager
+      do create this with resolved = True
+
+    choice Reject : ContractId ApprovalRequest
+      controller treasuryManager
+      do create this with resolved = True

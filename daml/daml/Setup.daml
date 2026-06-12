@@ -1,0 +1,196 @@
+module Setup where
+
+import Daml.Script
+import Types
+import InstitutionMandate
+import CollateralPool
+import DA.Time (hours)
+
+-- Full end-to-end scenario:
+-- 1. Bank A creates institution mandate
+-- 2. Compliance issues operational mandate
+-- 3. Treasury manager issues agent session
+-- 4. AI Agent executes rebalance (within limits)
+-- 5. Counterparty sends margin call
+-- 6. AI Agent responds to margin call
+-- 7. Audit log verified
+-- 8. Agent tries to exceed limit → fails (asserts)
+setup : Script ()
+setup = script do
+
+  -- Allocate parties
+  bankA          <- allocatePartyWithHint "BankA"          (PartyIdHint "BankA")
+  compliance     <- allocatePartyWithHint "Compliance"     (PartyIdHint "Compliance")
+  treasury       <- allocatePartyWithHint "Treasury"       (PartyIdHint "Treasury")
+  aiAgent        <- allocatePartyWithHint "AIAgent"        (PartyIdHint "AIAgent")
+  regulator      <- allocatePartyWithHint "Regulator"      (PartyIdHint "Regulator")
+  bankB          <- allocatePartyWithHint "BankB"          (PartyIdHint "BankB")
+
+  -- STEP 1: Institution creates the mandate (Layer 1)
+  debug "=== STEP 1: Creating Institution Mandate ==="
+  mandateCid <- submit bankA do
+    createCmd InstitutionMandate with
+      institution           = bankA
+      complianceOfficer     = compliance
+      agent                 = aiAgent
+      regulator             = regulator
+      allowedAssets         = [Bond, Treasury, Cash]
+      allowedCounterparties = [bankB]
+      maxSingleActionUSD    = 500_000.0
+      maxDailyVolumeUSD     = 2_000_000.0
+      expiryDate            = date 2026 Dec 31
+      mandateId             = "MANDATE-BANKA-2026-001"
+
+  debug "Institution Mandate created"
+
+  -- STEP 2: Compliance + Institution issue operational mandate (Layer 2)
+  debug "=== STEP 2: Issuing Operational Mandate ==="
+  operationalCid <- submitMulti [bankA, compliance] [] do
+    exerciseCmd mandateCid IssueOperationalMandate with
+      treasuryManager              = treasury
+      targetAllocations            = [(Bond, 60.0), (Treasury, 30.0), (Cash, 10.0)]
+      rebalanceThresholdPct        = 5.0
+      marginCallResponseLimitUSD   = 200_000.0
+
+  debug "Operational Mandate issued"
+
+  -- STEP 3: Treasury manager issues agent session (Layer 3)
+  debug "=== STEP 3: Issuing Agent Session ==="
+  sessionCid <- submit treasury do
+    exerciseCmd operationalCid IssueAgentSession with
+      validForHours    = 8
+      permittedChoices = [CanRebalance, CanRespondToMarginCall, CanPostCollateral]
+
+  debug "Agent Session issued to AI Agent"
+
+  -- STEP 4: AI Agent executes a rebalance
+  debug "=== STEP 4: Agent executes rebalance Bond → Treasury ==="
+  (sessionCid2, rebalanceActionCid) <- submit aiAgent do
+    exerciseCmd sessionCid ExecuteRebalance with
+      fromAsset   = Bond
+      toAsset     = Treasury
+      amount      = 100_000.0
+      aiRationale = "Portfolio drifted: Bond at 67% (target 60%), Treasury at 23% (target 30%). \
+                    \Rebalancing $100k from Bond to Treasury to restore target allocation. \
+                    \Market conditions stable, no adverse price impact expected."
+
+  debug "Rebalance executed and logged on-chain"
+
+  -- STEP 5: Verify audit log was created
+  debug "=== STEP 5: Verifying audit log ==="
+  Some rebalanceAction <- queryContractId bankA rebalanceActionCid
+  debug $ "Action type: " <> show rebalanceAction.actionType
+  debug $ "Amount: $" <> show rebalanceAction.amount
+  debug $ "AI Rationale stored on-chain: " <> rebalanceAction.aiRationale
+  debug $ "Limit checks passed: " <> show (length rebalanceAction.limitChecks)
+
+  -- STEP 6: Bank B sends a margin call to Bank A
+  debug "=== STEP 6: BankB sends margin call to BankA ==="
+  now <- getTime
+  marginCallCid <- submit bankB do
+    createCmd MarginCall with
+      counterparty      = bankB
+      institution       = bankA
+      agent             = aiAgent
+      callId            = "MC-2026-0042"
+      requiredAmountUSD = 150_000.0
+      requiredAsset     = Treasury
+      deadline          = addRelTime now (hours 2)
+      penaltyUSD        = 15_000.0
+      isOpen            = True
+
+  debug "Margin call received from BankB"
+
+  -- STEP 7: AI Agent responds to margin call automatically
+  debug "=== STEP 7: Agent responds to margin call ==="
+  (sessionCid3, marginActionCid) <- submit aiAgent do
+    exerciseCmd sessionCid2 RespondToMarginCall with
+      callId      = "MC-2026-0042"
+      amount      = 150_000.0
+      asset       = Treasury
+      aiRationale = "Margin call MC-2026-0042 from BankB requires $150k Treasury by deadline in 2h. \
+                    \Pool has $480k Treasury available (utilization 32%). \
+                    \Penalty of $15k if defaulted. Responding immediately to avoid penalty. \
+                    \Amount ($150k) is within margin call limit ($200k) and daily volume remaining."
+
+  debug "Margin call responded — logged on-chain"
+
+  -- STEP 8: Agent accepts the margin call (counterparty side)
+  _responseCid <- submit aiAgent do
+    exerciseCmd marginCallCid AcceptCall with
+      postedAmountUSD = 150_000.0
+      agentSessionId  = "MANDATE-BANKA-2026-001-ops-session"
+
+  debug "Margin call closed successfully"
+
+  -- STEP 9: Check session volume usage
+  debug "=== STEP 9: Checking session limits usage ==="
+  Some session <- queryContractId treasury sessionCid3
+  debug $ "Actions used today: " <> show session.actionsUsedToday
+  debug $ "Volume used today: $" <> show session.volumeUsedTodayUSD
+  debug $ "Volume remaining: $" <> show (session.maxDailyVolumeUSD - session.volumeUsedTodayUSD)
+
+  -- STEP 10: Test limit enforcement — agent tries to exceed daily cap
+  debug "=== STEP 10: Testing limit enforcement (should fail) ==="
+  submitMustFail aiAgent do
+    exerciseCmd sessionCid3 ExecuteRebalance with
+      fromAsset   = Bond
+      toAsset     = Cash
+      amount      = 1_800_000.0  -- exceeds remaining daily volume
+      aiRationale = "This should be blocked by the ledger"
+
+  debug "✓ Limit enforcement PASSED — ledger correctly rejected over-limit action"
+
+  -- STEP 11: Test asset restriction — try disallowed asset
+  debug "=== STEP 11: Testing asset restriction (should fail) ==="
+  submitMustFail aiAgent do
+    exerciseCmd sessionCid3 ExecuteRebalance with
+      fromAsset   = Equity  -- not in allowedAssets
+      toAsset     = Cash
+      amount      = 10_000.0
+      aiRationale = "This should be blocked by the ledger"
+
+  debug "✓ Asset restriction PASSED — ledger correctly rejected disallowed asset"
+
+  -- STEP 12: Cross-institution settlement (DVP)
+  debug "=== STEP 12: Cross-institution DVP settlement ==="
+  now2 <- getTime
+  settlementCid <- submitMulti [bankA, bankB] [] do
+    createCmd CrossInstitutionSettlement with
+      institutionA = bankA
+      institutionB = bankB
+      agentA       = aiAgent
+      agentB       = aiAgent  -- demo: same agent handles both (in prod: different agents)
+      settlementId = "DVP-2026-001"
+      legA         = AssetHolding { asset = Bond,     quantity = 100.0, valueUSD = 100_000.0 }
+      legB         = AssetHolding { asset = Treasury, quantity = 95.0,  valueUSD = 95_000.0  }
+      state        = Proposed
+      proposedAt   = now2
+      confirmedByA = False
+      confirmedByB = False
+
+  settlementCid2 <- submit aiAgent do
+    exerciseCmd settlementCid ConfirmByAgentA with sessionId = "MANDATE-BANKA-2026-001-ops-session"
+
+  settlementCid3 <- submit aiAgent do
+    exerciseCmd settlementCid2 ConfirmByAgentB with sessionId = "MANDATE-BANKA-2026-001-ops-session"
+
+  Some settlement <- queryContractId bankA settlementCid3
+  debug $ "Settlement state: " <> show settlement.state  -- should be Settled
+  assertMsg "settlement is Settled" (settlement.state == Settled)
+
+  debug ""
+  debug "========================================="
+  debug "  ALL TESTS PASSED — Mandate Protocol"
+  debug "========================================="
+  debug "  ✓ Institution Mandate created"
+  debug "  ✓ Operational Mandate issued"
+  debug "  ✓ Agent Session issued"
+  debug "  ✓ Rebalance executed with AI rationale stored on-chain"
+  debug "  ✓ Margin call responded automatically"
+  debug "  ✓ Limit enforcement working (over-limit blocked)"
+  debug "  ✓ Asset restriction working (disallowed asset blocked)"
+  debug "  ✓ Cross-institution DVP settled atomically"
+  debug "========================================="
+
+  return ()

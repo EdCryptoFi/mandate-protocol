@@ -1,0 +1,55 @@
+module Types where
+
+-- Asset classes the agent can manage
+data AssetClass
+  = Bond
+  | Treasury
+  | Cash
+  | Equity
+  | Commodity
+  deriving (Eq, Ord, Show)
+
+-- What types of actions the agent session can permit
+data ChoiceType
+  = CanRebalance
+  | CanPostCollateral
+  | CanRespondToMarginCall
+  | CanRequestSettlement
+  deriving (Eq, Ord, Show)
+
+-- State machine for settlements
+data SettlementState
+  = Proposed
+  | ConfirmedByA
+  | ConfirmedByB
+  | Settled
+  | Cancelled
+  deriving (Eq, Ord, Show)
+
+-- Action types for the audit log
+data ActionType
+  = Rebalance
+  | CollateralPost
+  | CollateralWithdraw
+  | MarginCallResponse
+  | SettlementConfirm
+  | SessionRenew
+  | HumanEscalation
+  deriving (Eq, Ord, Show)
+
+-- Result of a single limit check
+data LimitCheckResult = LimitCheckResult
+  with
+    limitName  : Text
+    checked    : Decimal
+    allowed    : Decimal
+    passed     : Bool
+  deriving (Eq, Show)
+
+-- A single asset holding
+data AssetHolding = AssetHolding
+  with
+    asset    : AssetClass
+    quantity : Decimal
+    valueUSD : Decimal
+  deriving (Eq, Show)

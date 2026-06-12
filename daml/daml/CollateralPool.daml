@@ -1,0 +1,182 @@
+module CollateralPool where
+
+import Types
+import DA.List (foldl)
+
+-- The institution's collateral pool.
+-- The agent can read it; counterparties see only the subset
+-- relevant to their specific agreements (Canton sub-tx privacy).
+template CollateralPool
+  with
+    institution : Party
+    agent       : Party
+    poolId      : Text
+    holdings    : [AssetHolding]   -- list of (asset, qty, valueUSD)
+    totalValueUSD : Decimal
+    utilizationRatio : Decimal     -- 0.0 to 1.0 (how much is locked/posted)
+    lockedUSD   : Decimal
+  where
+    signatory institution
+    observer agent
+
+    -- Agent updates the pool state after an action
+    choice UpdateHoldings : ContractId CollateralPool
+      with
+        newHoldings      : [AssetHolding]
+        newUtilization   : Decimal
+      controller agent
+      do
+        let newTotal = foldl (\acc h -> acc + h.valueUSD) 0.0 newHoldings
+        create this with
+          holdings         = newHoldings
+          totalValueUSD    = newTotal
+          utilizationRatio = newUtilization
+          lockedUSD        = newTotal * newUtilization
+
+    -- Institution deposits new assets
+    choice Deposit : ContractId CollateralPool
+      with
+        newAsset : AssetHolding
+      controller institution
+      do
+        create this with
+          holdings      = holdings ++ [newAsset]
+          totalValueUSD = totalValueUSD + newAsset.valueUSD
+
+    -- Institution withdraws (only unencumbered portion)
+    choice Withdraw : ContractId CollateralPool
+      with
+        asset      : AssetClass
+        amountUSD  : Decimal
+      controller institution
+      do
+        let availableUSD = totalValueUSD * (1.0 - utilizationRatio)
+        assertMsg "sufficient unencumbered assets" (amountUSD <= availableUSD)
+        create this with
+          totalValueUSD = totalValueUSD - amountUSD
+
+
+-- A margin call from a counterparty institution.
+-- The counterparty is the signatory; the receiving institution sees it.
+-- The agent can act on it via AgentSession.RespondToMarginCall.
+template MarginCall
+  with
+    counterparty      : Party
+    institution       : Party  -- who must respond
+    agent             : Party
+    callId            : Text
+    requiredAmountUSD : Decimal
+    requiredAsset     : AssetClass
+    deadline          : Time
+    penaltyUSD        : Decimal
+    isOpen            : Bool
+  where
+    signatory counterparty
+    observer institution, agent
+
+    -- Agent responds (closes the call)
+    choice AcceptCall : ContractId MarginCallResponse
+      with
+        postedAmountUSD : Decimal
+        agentSessionId  : Text
+      controller agent
+      do
+        assertMsg "call is open"  isOpen
+        assertMsg "adequate amount" (postedAmountUSD >= requiredAmountUSD)
+        now <- getTime
+        create MarginCallResponse with
+          counterparty
+          institution
+          callId
+          postedAmountUSD
+          respondedAt = now
+          agentSessionId
+
+    -- Institution disputes (human takeover)
+    choice DisputeCall : ()
+      controller institution
+      do return ()
+
+    -- Counterparty enforces penalty if deadline passed
+    choice EnforceDefault : ContractId DefaultRecord
+      controller counterparty
+      do
+        now <- getTime
+        assertMsg "deadline has passed" (now > deadline)
+        create DefaultRecord with
+          institution
+          counterparty
+          callId
+          penaltyUSD
+          defaultedAt = now
+
+
+template MarginCallResponse
+  with
+    counterparty    : Party
+    institution     : Party
+    callId          : Text
+    postedAmountUSD : Decimal
+    respondedAt     : Time
+    agentSessionId  : Text
+  where
+    signatory institution
+    observer counterparty
+
+
+template DefaultRecord
+  with
+    institution  : Party
+    counterparty : Party
+    callId       : Text
+    penaltyUSD   : Decimal
+    defaultedAt  : Time
+  where
+    signatory counterparty
+    observer institution
+
+
+-- Atomic DVP settlement between two institutions.
+-- Both agents confirm their leg independently.
+-- Settlement is atomic: both legs execute or neither does.
+template CrossInstitutionSettlement
+  with
+    institutionA : Party
+    institutionB : Party
+    agentA       : Party
+    agentB       : Party
+    settlementId : Text
+    legA         : AssetHolding   -- A delivers this
+    legB         : AssetHolding   -- B delivers this
+    state        : SettlementState
+    proposedAt   : Time
+    confirmedByA : Bool
+    confirmedByB : Bool
+  where
+    signatory institutionA, institutionB
+    observer agentA, agentB
+
+    choice ConfirmByAgentA : ContractId CrossInstitutionSettlement
+      with sessionId : Text
+      controller agentA
+      do
+        assertMsg "not yet settled" (state /= Settled)
+        let newState = if confirmedByB then Settled else ConfirmedByA
+        create this with
+          confirmedByA = True
+          state        = newState
+
+    choice ConfirmByAgentB : ContractId CrossInstitutionSettlement
+      with sessionId : Text
+      controller agentB
+      do
+        assertMsg "not yet settled" (state /= Settled)
+        let newState = if confirmedByA then Settled else ConfirmedByB
+        create this with
+          confirmedByB = True
+          state        = newState
+
+    choice CancelSettlement : ContractId CrossInstitutionSettlement
+      with reason : Text
+      controller institutionA
+      do create this with state = Cancelled
