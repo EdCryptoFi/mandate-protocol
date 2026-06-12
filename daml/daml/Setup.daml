@@ -4,7 +4,8 @@ import Daml.Script
 import Types
 import InstitutionMandate
 import CollateralPool
-import DA.Time (hours)
+import DA.Date (date, Month(..))
+import DA.Time (hours, addRelTime)
 
 -- Full end-to-end scenario:
 -- 1. Bank A creates institution mandate
@@ -27,8 +28,9 @@ setup = script do
   bankB          <- allocatePartyWithHint "BankB"          (PartyIdHint "BankB")
 
   -- STEP 1: Institution creates the mandate (Layer 1)
+  -- Requires both institution + complianceOfficer as signatories
   debug "=== STEP 1: Creating Institution Mandate ==="
-  mandateCid <- submit bankA do
+  mandateCid <- submitMulti [bankA, compliance] [] do
     createCmd InstitutionMandate with
       institution           = bankA
       complianceOfficer     = compliance

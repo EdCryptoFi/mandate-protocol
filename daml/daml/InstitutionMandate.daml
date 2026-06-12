@@ -101,8 +101,8 @@ template OperationalMandate
     allowedCounterparties: [Party]
     operationalMandateId : Text
   where
-    signatory institution, treasuryManager
-    observer complianceOfficer, agent
+    signatory institution
+    observer treasuryManager, complianceOfficer, agent
 
     -- Treasury manager adjusts target allocations within compliance limits
     choice AdjustAllocations : ContractId OperationalMandate
@@ -165,8 +165,8 @@ template AgentSession
     allowedCounterparties : [Party]
     issuedAt           : Time
   where
-    signatory institution, treasuryManager
-    observer agent
+    signatory institution
+    observer treasuryManager, agent
 
     -- Guard: checks all limits, returns updated volume tracker
     nonconsuming choice CheckLimits : [LimitCheckResult]

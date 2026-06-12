@@ -75,7 +75,7 @@ template MarginCall
     observer institution, agent
 
     -- Agent responds (closes the call)
-    choice AcceptCall : ContractId MarginCallResponse
+    choice AcceptCall : ContractId MarginCallReceipt
       with
         postedAmountUSD : Decimal
         agentSessionId  : Text
@@ -84,7 +84,7 @@ template MarginCall
         assertMsg "call is open"  isOpen
         assertMsg "adequate amount" (postedAmountUSD >= requiredAmountUSD)
         now <- getTime
-        create MarginCallResponse with
+        create MarginCallReceipt with
           counterparty
           institution
           callId
@@ -111,7 +111,7 @@ template MarginCall
           defaultedAt = now
 
 
-template MarginCallResponse
+template MarginCallReceipt
   with
     counterparty    : Party
     institution     : Party
@@ -120,8 +120,8 @@ template MarginCallResponse
     respondedAt     : Time
     agentSessionId  : Text
   where
-    signatory institution
-    observer counterparty
+    signatory counterparty
+    observer institution
 
 
 template DefaultRecord
