@@ -169,6 +169,7 @@
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../assets/sanitize.js"></script>
 <script src="../assets/data.js"></script>
 <script src="../assets/sidebar.js"></script>
 <script type="text/babel" src="../assets/charts-core.jsx"></script>
@@ -196,7 +197,7 @@ M.holdings.forEach(h=>{
   const dStr=(drift>0?'+':'')+drift+'pp';
   const dc=Math.abs(drift)>4?'#D44B40':Math.abs(drift)>2?'#B57A10':'var(--green)';
   const tr=document.createElement('tr');
-  tr.innerHTML=`<td><span class="tag" style="background:${h.color}20;color:${h.color}">${h.label}</span></td><td class="r num">${h.pct}%</td><td class="r num" style="color:var(--muted)">${h.target}%</td><td class="r num" style="color:${dc};font-weight:600">${dStr}</td>`;
+  tr.innerHTML=`<td><span class="tag" style="background:${escapeHTML(h.color)}20;color:${escapeHTML(h.color)}">${escapeHTML(h.label)}</span></td><td class="r num">${h.pct}%</td><td class="r num" style="color:var(--muted)">${h.target}%</td><td class="r num" style="color:${escapeHTML(dc)};font-weight:600">${escapeHTML(dStr)}</td>`;
   at.appendChild(tr);
 });
 
@@ -213,7 +214,7 @@ if(cl){[
   const pct=Math.round(l.used/l.cap*100);
   const color=pct>80?'#D44B40':pct>60?'#E8A020':'var(--green)';
   const div=document.createElement('div'); div.className='limit-row';
-  div.innerHTML=`<div class="limit-meta"><span>${l.label}</span><span class="num">$${(l.used/1000).toFixed(0)}k <span style="color:var(--muted)">/ $${(l.cap/1000).toFixed(0)}k</span></span></div><div class="limit-bar"><div class="limit-fill" style="width:${pct}%;background:${color}"></div></div>`;
+  div.innerHTML=`<div class="limit-meta"><span>${escapeHTML(l.label)}</span><span class="num">$${(l.used/1000).toFixed(0)}k <span style="color:var(--muted)">/ $${(l.cap/1000).toFixed(0)}k</span></span></div><div class="limit-bar"><div class="limit-fill" style="width:${pct}%;background:${escapeHTML(color)}"></div></div>`;
   cl.appendChild(div);
 });}
 </script>
@@ -226,18 +227,18 @@ function renderActions(actions){
   actions.forEach(a=>{
     const isM=a.actionType==='MarginCallResponse';
     const card=document.createElement('div'); card.className='action-card';
-    const checks=(a.limitChecks||[]).map(c=>`<div class="lc-row"><span class="lc-pass">✓</span><span>${c.name}${c.checked?' · $'+c.checked.toLocaleString()+' / $'+(c.allowed||0).toLocaleString():''}</span></div>`).join('');
+    const checks=(a.limitChecks||[]).map(c=>`<div class="lc-row"><span class="lc-pass">✓</span><span>${escapeHTML(c.name)}${c.checked?' · $'+c.checked.toLocaleString()+' / $'+(c.allowed||0).toLocaleString():''}</span></div>`).join('');
     card.innerHTML=`<div class="action-head" onclick="this.parentElement.classList.toggle('open')">
       <span class="action-type ${isM?'margincall':'rebalance'}">${isM?'MARGIN CALL':'REBALANCE'}</span>
-      <span style="font-size:13px;font-weight:500;color:var(--ink)">${a.actionId} · $${a.amount.toLocaleString()} ${a.asset}${a.toAsset?' → '+a.toAsset:''}</span>
-      <span style="margin-left:auto;font-size:11px;color:var(--muted)">${(a.timestamp||'').substring(11,16)} UTC</span>
+      <span style="font-size:13px;font-weight:500;color:var(--ink)">${escapeHTML(a.actionId)} · $${a.amount.toLocaleString()} ${escapeHTML(a.asset)}${a.toAsset?' → '+escapeHTML(a.toAsset):''}</span>
+      <span style="margin-left:auto;font-size:11px;color:var(--muted)">${escapeHTML((a.timestamp||'').substring(11,16))} UTC</span>
       <span style="font-size:11px;color:var(--green);font-weight:600">✓ On-chain</span>
     </div>
     <div class="action-body">
-      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">AI Rationale — Canton ledger · ${a.damlTx||''}</div>
-      <div class="rationale-box">${a.aiRationale||''}</div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">AI Rationale — Canton ledger · ${escapeHTML(a.damlTx||'')}</div>
+      <div class="rationale-box">${escapeHTML(a.aiRationale||'')}</div>
       ${checks}
-      ${a.counterparty?`<div class="kv"><span class="k">Counterparty</span><span class="v">${a.counterparty} · ${a.callId||''}</span></div>`:''}
+      ${a.counterparty?`<div class="kv"><span class="k">Counterparty</span><span class="v">${escapeHTML(a.counterparty)} · ${escapeHTML(a.callId||'')}</span></div>`:''}
       <div class="kv"><span class="k">Human approved</span><span class="v">${a.humanApproved?'Yes':'No — within session limits'}</span></div>
     </div>`;
     feed.appendChild(card);
@@ -251,13 +252,13 @@ if(raf) window.MANDATE.agentActions.forEach(a=>{
   const div=document.createElement('div'); div.className='action-card';
   div.innerHTML=`<div class="action-head" onclick="this.parentElement.classList.toggle('open')">
     <span class="action-type ${isM?'margincall':'rebalance'}">${isM?'MARGIN CALL':'REBALANCE'}</span>
-    <span style="font-size:13px;font-weight:500;color:var(--ink)">${a.actionId} · $${a.amount.toLocaleString()} ${a.asset}</span>
-    <span style="margin-left:auto;font-size:11px;color:var(--muted)">${(a.timestamp||'').substring(11,16)} UTC</span>
+    <span style="font-size:13px;font-weight:500;color:var(--ink)">${escapeHTML(a.actionId)} · $${a.amount.toLocaleString()} ${escapeHTML(a.asset)}</span>
+    <span style="margin-left:auto;font-size:11px;color:var(--muted)">${escapeHTML((a.timestamp||'').substring(11,16))} UTC</span>
     <span style="font-size:11px;color:var(--green);font-weight:600">✓ On-chain</span>
   </div>
   <div class="action-body">
-    <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">AI Rationale — Canton ledger · ${a.damlTx||''}</div>
-    <div class="rationale-box">${a.aiRationale||''}</div>
+    <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">AI Rationale — Canton ledger · ${escapeHTML(a.damlTx||'')}</div>
+    <div class="rationale-box">${escapeHTML(a.aiRationale||'')}</div>
     <div style="margin-top:10px;padding:8px;border-radius:8px;background:rgba(13,90,67,.06);font-size:12px;color:var(--muted)">⚠ Pool balance and full holdings are private to Bank A — Canton sub-transaction privacy enforced at protocol level.</div>
   </div>`;
   raf.appendChild(div);
@@ -267,7 +268,7 @@ const af=document.getElementById('activity-feed');
 const icons={action:'◆',session:'⊙',call:'↓',audit:'✎'};
 window.MANDATE.activity.forEach(a=>{
   const r=document.createElement('div'); r.className='feed-item';
-  r.innerHTML=`<div class="feed-ico action">${icons[a.kind]||'·'}</div><div style="flex:1"><div class="ft">${a.label}</div><div class="fs">${a.sub}</div></div><div class="fd">${a.date}</div>`;
+  r.innerHTML=`<div class="feed-ico action">${icons[a.kind]||'·'}</div><div style="flex:1"><div class="ft">${escapeHTML(a.label)}</div><div class="fs">${escapeHTML(a.sub)}</div></div><div class="fd">${escapeHTML(a.date)}</div>`;
   af.appendChild(r);
 });
 
@@ -292,14 +293,14 @@ function simulateMarginCall(){
   const cpty=['Bank B','Clearinghouse Gamma'][Math.floor(Math.random()*2)];
   const cid='MC-2026-00'+Math.floor(50+Math.random()*10);
   banner.className='alert-banner show incoming';
-  banner.innerHTML=`<span style="font-size:16px">⚡</span><span>Margin Call Incoming — ${cid} · ${cpty} · $${amt.toLocaleString()} Cash · deadline 1h</span>`;
+  banner.innerHTML=`<span style="font-size:16px">⚡</span><span>Margin Call Incoming — ${escapeHTML(cid)} · ${escapeHTML(cpty)} · $${amt.toLocaleString()} Cash · deadline 1h</span>`;
   setTimeout(()=>{
     banner.className='alert-banner show reasoning';
     banner.innerHTML=`<span style="width:14px;height:14px;border:2px solid rgba(79,110,247,.3);border-top-color:#4F6EF7;border-radius:50%;display:inline-block;animation:spin .7s linear infinite"></span><span>Agent reasoning… checking limits against session AGT-2026-001</span>`;
   },2000);
   setTimeout(()=>{
     banner.className='alert-banner show responded';
-    banner.innerHTML=`<span style="font-size:16px">✓</span><span>Responded — $${amt.toLocaleString()} Cash posted to ${cpty} · AgentAction created on Canton ledger</span>`;
+    banner.innerHTML=`<span style="font-size:16px">✓</span><span>Responded — $${amt.toLocaleString()} Cash posted to ${escapeHTML(cpty)} · AgentAction created on Canton ledger</span>`;
     const newA={actionId:'ACT-00'+Math.floor(3+Math.random()*10),actionType:'MarginCallResponse',amount:amt,asset:'Cash',counterparty:cpty,callId:cid,timestamp:new Date().toISOString(),aiRationale:`Margin call ${cid} from ${cpty} requires $${amt.toLocaleString()} Cash. Within margin call limit ($300K). Daily volume after: $${(430000+amt).toLocaleString()} / $2,000,000. Responding immediately.`,limitChecks:[{name:'margin_call_limit',checked:amt,allowed:300000},{name:'daily_volume_cap',checked:430000+amt,allowed:2000000}],humanApproved:false,damlTx:'TX-0x'+Math.random().toString(16).slice(2,10).toUpperCase()+'…'};
     renderActions([newA,...window.MANDATE.agentActions]);
   },5500);

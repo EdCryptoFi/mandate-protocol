@@ -151,6 +151,7 @@
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../assets/sanitize.js"></script>
 <script src="../assets/data.js"></script>
 <script src="../assets/sidebar.js"></script>
 <script type="text/babel" src="../assets/charts-core.jsx"></script>
@@ -163,7 +164,7 @@ ReactDOM.createRoot(document.getElementById('pool-donut')).render(
 const pl=document.getElementById('pool-legend');
 M.capital.forEach(x=>{
   const d=document.createElement('div'); d.className='li';
-  d.innerHTML=`<span class="sw" style="background:${x.color}"></span>${x.label}<span class="va" style="margin-left:auto">$${(x.value/1000).toFixed(0)}k</span>`;
+  d.innerHTML=`<span class="sw" style="background:${escapeHTML(x.color)}"></span>${escapeHTML(x.label)}<span class="va" style="margin-left:auto">$${(x.value/1000).toFixed(0)}k</span>`;
   pl.appendChild(d);
 });
 </script>
@@ -172,7 +173,7 @@ const M = window.MANDATE;
 const tf = document.getElementById('daml-tests');
 M.damlTests.forEach(t=>{
   const div=document.createElement('div'); div.className='test-row'+(t.highlight?' highlight':'');
-  div.innerHTML=`<span class="test-num">${String(t.step).padStart(2,'0')}</span><span class="test-label">${t.label}</span><span class="test-pass">PASS ✓</span>`;
+  div.innerHTML=`<span class="test-num">${String(t.step).padStart(2,'0')}</span><span class="test-label">${escapeHTML(t.label)}</span><span class="test-pass">PASS ✓</span>`;
   tf.appendChild(div);
 });
 </script>

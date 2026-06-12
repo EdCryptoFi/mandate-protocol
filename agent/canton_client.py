@@ -11,6 +11,7 @@ import httpx
 import json
 import os
 import re
+import warnings
 from urllib.parse import urlparse
 from typing import Any, Optional
 from dataclasses import dataclass
@@ -26,6 +27,16 @@ def make_dev_token(party_id: str, ledger_id: str = "sandbox", secret: str = "sec
     The JSON API always requires a JWT to know which party to act as,
     even when the underlying sandbox runs without auth.
     """
+    # VULN-2: the default secret "secret" is publicly known (it's in the repo).
+    # This is intentional for the local sandbox only.  Emit a loud warning so
+    # it is never silently used against a real network.
+    if secret == "secret":
+        warnings.warn(
+            "make_dev_token is using the default hardcoded secret 'secret'. "
+            "This token is ONLY safe for the local Canton sandbox. "
+            "Never use it against DevNet, MainNet, or any shared environment.",
+            stacklevel=2,
+        )
     header = _b64url(json.dumps({"alg": "HS256", "typ": "JWT"}).encode())
     payload = _b64url(json.dumps({
         "https://daml.com/ledger-api": {

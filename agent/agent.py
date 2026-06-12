@@ -52,17 +52,28 @@ ACTION_TYPE = {
 }
 
 
+_MIN_POLL_INTERVAL = 1    # seconds — prevent CPU spin on POLL_INTERVAL_SECONDS=0
+_MAX_BACKOFF        = 60  # seconds — exponential backoff ceiling after consecutive errors
+
+
 class MandateAgent:
     def __init__(self):
+        # VULN-6: clamp poll interval — 0 or negative would cause CPU spin / API flood
+        raw_interval = int(os.getenv("POLL_INTERVAL_SECONDS", "3"))
+        self.poll_interval = max(_MIN_POLL_INTERVAL, raw_interval)
+        if raw_interval < _MIN_POLL_INTERVAL:
+            console.print(f"[yellow]POLL_INTERVAL_SECONDS={raw_interval} is too low — clamped to {_MIN_POLL_INTERVAL}s[/yellow]")
+
         self.canton = CantonClient(
             base_url=os.getenv("CANTON_JSON_API_URL", "http://localhost:7575"),
             party_id=os.getenv("CANTON_PARTY_ID", ""),
             token=os.getenv("CANTON_TOKEN", ""),
         )
+        # AIReasoner validates api_key is non-empty and raises on startup if missing
         self.reasoner = AIReasoner(api_key=os.getenv("ANTHROPIC_API_KEY", ""))
         self.session_contract_id = os.getenv("AGENT_SESSION_CONTRACT_ID", "")
-        self.poll_interval = int(os.getenv("POLL_INTERVAL_SECONDS", "3"))
         self.action_count = 0
+        self._consecutive_errors = 0
 
     async def run(self):
         console.print(Panel.fit(
@@ -74,11 +85,16 @@ class MandateAgent:
         while True:
             try:
                 await self._tick()
+                self._consecutive_errors = 0          # reset backoff on success
+                await asyncio.sleep(self.poll_interval)
             except Exception as e:
-                console.print(f"[red]Agent error: {e}[/red]")
-                log.exception("Agent tick failed")
-
-            await asyncio.sleep(self.poll_interval)
+                self._consecutive_errors += 1
+                # VULN-7: structured logging + exponential backoff — not silent swallowing
+                log.exception("Agent tick failed (consecutive errors: %d)", self._consecutive_errors)
+                console.print(f"[red]Agent error (#{self._consecutive_errors}): {e}[/red]")
+                backoff = min(_MAX_BACKOFF, self.poll_interval * (2 ** (self._consecutive_errors - 1)))
+                console.print(f"[yellow]Backing off {backoff:.0f}s before next tick[/yellow]")
+                await asyncio.sleep(backoff)
 
     async def _tick(self):
         # 1. Read ledger state

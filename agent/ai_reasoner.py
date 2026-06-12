@@ -2,9 +2,12 @@
 
 import anthropic
 import json
+import logging
 from dataclasses import dataclass
 from typing import Optional
 from enum import Enum
+
+log = logging.getLogger("mandate-agent.reasoner")
 
 
 class AgentDecision(Enum):
@@ -50,9 +53,37 @@ OUTPUT FORMAT (JSON only):
 }"""
 
 
+_VALID_ASSETS = frozenset({"Bond", "Treasury", "Cash", "Equity", "Commodity"})
+_MAX_AMOUNT_USD = 10_000_000.0   # absolute ceiling above any real mandate limit
+
+
 class AIReasoner:
     def __init__(self, api_key: str):
+        # VULN-2 mitigation: fail fast on missing API key rather than silently using empty string
+        if not api_key:
+            raise ValueError("ANTHROPIC_API_KEY is not set — agent cannot start without a valid key")
         self.client = anthropic.Anthropic(api_key=api_key)
+
+    # ------------------------------------------------------------------ #
+    #  Schema validators — whitelist-only, never trust Claude's raw output #
+    # ------------------------------------------------------------------ #
+
+    @staticmethod
+    def _validate_decision(v: object) -> str:
+        valid = {d.value for d in AgentDecision}
+        return v if v in valid else AgentDecision.NO_ACTION.value
+
+    @staticmethod
+    def _validate_asset(v: object) -> str:
+        return v if v in _VALID_ASSETS else "Cash"
+
+    @staticmethod
+    def _validate_amount(v: object) -> float:
+        try:
+            n = float(v)  # type: ignore[arg-type]
+        except (TypeError, ValueError):
+            return 0.0
+        return max(0.0, min(n, _MAX_AMOUNT_USD))
 
     def reason(
         self,
@@ -61,17 +92,18 @@ class AIReasoner:
         events: list[dict],
         market_prices: dict[str, float],
     ) -> ReasoningResult:
-        """
-        Ask Claude to reason about the current state and decide an action.
+        """Ask Claude to reason about the current state and decide an action.
         Returns a structured decision with an auditable rationale.
         """
         context = self._build_context(session_state, pool_state, events, market_prices)
 
+        # VULN-9: explicit timeout — prevents agent from hanging if Anthropic API stalls
         message = self.client.messages.create(
             model="claude-sonnet-4-6",
             max_tokens=1024,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": context}],
+            timeout=30.0,
         )
 
         raw = message.content[0].text.strip()
@@ -82,16 +114,36 @@ class AIReasoner:
             if raw.startswith("json"):
                 raw = raw[4:]
 
-        data = json.loads(raw)
+        # VULN-4: explicit try/except — JSONDecodeError is not caught by caller
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            log.error("Claude returned non-JSON response (len=%d): %s", len(raw), raw[:200])
+            raise ValueError(f"Claude returned non-JSON response: {exc}") from exc
+
+        if not isinstance(data, dict):
+            raise ValueError(f"Claude response is not a JSON object: {type(data)}")
+
+        # VULN-4: schema validation — every field from Claude is untrusted input
+        decision_str = self._validate_decision(data.get("decision"))
+        asset        = self._validate_asset(data.get("asset", "Cash"))
+        to_asset_raw = data.get("to_asset")
+        to_asset     = (self._validate_asset(to_asset_raw)
+                        if to_asset_raw not in (None, "null", "") else None)
+        amount       = self._validate_amount(data.get("amount", 0.0))
+        confidence   = max(0.0, min(1.0, float(data.get("confidence", 0.8))))
+        rationale    = str(data.get("rationale", ""))[:2000]
+        risk_flags   = [str(f)[:100] for f in data.get("risk_flags", [])
+                        if isinstance(f, str)][:10]
 
         return ReasoningResult(
-            decision=AgentDecision(data["decision"]),
-            amount=float(data.get("amount", 0.0)),
-            asset=data.get("asset", "Cash"),
-            to_asset=data.get("to_asset"),
-            rationale=data["rationale"],
-            confidence=float(data.get("confidence", 0.8)),
-            risk_flags=data.get("risk_flags", []),
+            decision=AgentDecision(decision_str),
+            amount=amount,
+            asset=asset,
+            to_asset=to_asset,
+            rationale=rationale,
+            confidence=confidence,
+            risk_flags=risk_flags,
         )
 
     def _sanitize_event(self, ev: dict) -> dict:

@@ -188,6 +188,7 @@
   </div>
 </div>
 
+<script src="../assets/sanitize.js"></script>
 <script src="../assets/data.js"></script>
 <script src="../assets/sidebar.js"></script>
 <script>
@@ -198,20 +199,20 @@ const al = document.getElementById('audit-log');
 M.agentActions.forEach(a=>{
   const isM=a.actionType==='MarginCallResponse';
   const div=document.createElement('div'); div.className='audit-row';
-  const checks=(a.limitChecks||[]).map(c=>`<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin-top:4px;color:var(--ink-2)"><span style="color:var(--green);font-weight:700">✓</span><span>${c.name}${c.checked?' · $'+c.checked.toLocaleString()+' / $'+(c.allowed||0).toLocaleString():''}</span></div>`).join('');
+  const checks=(a.limitChecks||[]).map(c=>`<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin-top:4px;color:var(--ink-2)"><span style="color:var(--green);font-weight:700">✓</span><span>${escapeHTML(c.name)}${c.checked?' · $'+c.checked.toLocaleString()+' / $'+(c.allowed||0).toLocaleString():''}</span></div>`).join('');
   div.innerHTML=`<div class="audit-head" onclick="this.parentElement.classList.toggle('open')">
     <span class="audit-type ${isM?'margincall':'rebalance'}">${isM?'MARGIN CALL':'REBALANCE'}</span>
-    <span style="font-size:13px;font-weight:500;color:var(--ink)">${a.actionId} · $${a.amount.toLocaleString()} ${a.asset}${a.toAsset?' → '+a.toAsset:''}</span>
-    <span style="margin-left:auto;font-size:11px;color:var(--muted)">${(a.timestamp||'').substring(11,16)} UTC · Bank A</span>
+    <span style="font-size:13px;font-weight:500;color:var(--ink)">${escapeHTML(a.actionId)} · $${a.amount.toLocaleString()} ${escapeHTML(a.asset)}${a.toAsset?' → '+escapeHTML(a.toAsset):''}</span>
+    <span style="margin-left:auto;font-size:11px;color:var(--muted)">${escapeHTML((a.timestamp||'').substring(11,16))} UTC · Bank A</span>
     <span style="font-size:11px;color:var(--green);font-weight:600">✓ Verified</span>
   </div>
   <div class="audit-body">
-    <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">AI Rationale — immutable on Canton ledger · ${a.damlTx||''}</div>
-    <div class="rationale-box">${a.aiRationale||''}</div>
+    <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">AI Rationale — immutable on Canton ledger · ${escapeHTML(a.damlTx||'')}</div>
+    <div class="rationale-box">${escapeHTML(a.aiRationale||'')}</div>
     ${checks}
     <div class="privacy-box">⚠ Collateral pool balance and full position breakdown are private to Bank A. Canton sub-transaction privacy enforces this at the protocol level — the regulator cannot access pool data.</div>
     <div class="kv"><span class="k">Human approved</span><span class="v">${a.humanApproved?'Yes':'No — within session limits'}</span></div>
-    <div class="kv"><span class="k">Daml contract</span><span class="v">${a.damlTx||'—'}</span></div>
+    <div class="kv"><span class="k">Daml contract</span><span class="v">${escapeHTML(a.damlTx||'—')}</span></div>
   </div>`;
   al.appendChild(div);
 });
@@ -221,7 +222,7 @@ const st = document.getElementById('security-tests');
 if(st) M.damlTests.forEach(t=>{
   const div=document.createElement('div');
   div.style.cssText='display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--hair-2);font-size:13px';
-  div.innerHTML=`<span style="font-family:var(--mono);font-size:11px;color:var(--muted);min-width:24px">${String(t.step).padStart(2,'0')}</span><span style="flex:1;color:${t.highlight?'var(--ink)':'var(--ink-2)'};font-weight:${t.highlight?'600':'400'}">${t.label}</span><span style="font-size:11px;font-weight:700;color:var(--green);font-family:var(--mono)">PASS ✓</span>`;
+  div.innerHTML=`<span style="font-family:var(--mono);font-size:11px;color:var(--muted);min-width:24px">${String(t.step).padStart(2,'0')}</span><span style="flex:1;color:${t.highlight?'var(--ink)':'var(--ink-2)'};font-weight:${t.highlight?'600':'400'}">${escapeHTML(t.label)}</span><span style="font-size:11px;font-weight:700;color:var(--green);font-family:var(--mono)">PASS ✓</span>`;
   st.appendChild(div);
 });
 

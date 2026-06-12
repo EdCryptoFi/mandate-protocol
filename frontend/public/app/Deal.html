@@ -145,6 +145,7 @@
   </div>
 </div>
 
+<script src="../assets/sanitize.js"></script>
 <script src="../assets/data.js"></script>
 <script src="../assets/sidebar.js"></script>
 <script>
@@ -165,16 +166,16 @@ marginCalls.forEach(mc=>{
   div.innerHTML=`
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
       <span class="mc-status ${mc.status}">${isResponded?'Responded':isBlocked?'Blocked — over limit':'Open'}</span>
-      <span style="font-size:13px;font-weight:600;color:var(--ink)">${mc.id} · ${mc.from}</span>
-      <span style="margin-left:auto;font-size:12px;color:var(--muted)">${mc.deadline}</span>
+      <span style="font-size:13px;font-weight:600;color:var(--ink)">${escapeHTML(mc.id)} · ${escapeHTML(mc.from)}</span>
+      <span style="margin-left:auto;font-size:12px;color:var(--muted)">${escapeHTML(mc.deadline)}</span>
     </div>
     <div style="display:flex;gap:20px;flex-wrap:wrap">
-      <div class="kv" style="flex:1;min-width:120px"><span class="k">Amount</span><span class="v">$${mc.amount.toLocaleString()} ${mc.asset}</span></div>
+      <div class="kv" style="flex:1;min-width:120px"><span class="k">Amount</span><span class="v">$${mc.amount.toLocaleString()} ${escapeHTML(mc.asset)}</span></div>
       <div class="kv" style="flex:1;min-width:120px"><span class="k">Penalty if default</span><span class="v" style="color:#D44B40">$${mc.penalty.toLocaleString()}</span></div>
     </div>
-    <div class="rationale-box">${mc.rationale}</div>
-    ${mc.damlTx?`<div style="font-size:11px;color:var(--muted);margin-top:8px;font-family:var(--mono)">Daml TX: ${mc.damlTx}</div>`:''}
-    ${isBlocked?`<button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="approveEscalation('${mc.id}')">Approve escalation →</button>`:''}
+    <div class="rationale-box">${escapeHTML(mc.rationale)}</div>
+    ${mc.damlTx?`<div style="font-size:11px;color:var(--muted);margin-top:8px;font-family:var(--mono)">Daml TX: ${escapeHTML(mc.damlTx)}</div>`:''}
+    ${isBlocked?`<button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="approveEscalation('${escapeHTML(mc.id)}')">Approve escalation →</button>`:''}
   `;
   mcContainer.appendChild(div);
 });
