@@ -1,0 +1,291 @@
+/* ============================================================
+   MANDATE — Capital Operating System on Canton
+   Shared design system. Light institutional. Editorial serif +
+   geometric sans. Deep forest green + on-chain mint.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..600;1,6..72,200..600&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* Surfaces */
+  --paper:      #FAF8F3;
+  --paper-2:    #F3F0E8;
+  --paper-3:    #ECE8DD;
+  --surface:    #FFFFFF;
+  --ink-surface:#101418;
+
+  /* Ink */
+  --ink:    #14181C;
+  --ink-2:  #353B42;
+  --muted:  #6A717A;
+  --faint:  #9AA0A7;
+  --ghost:  #C3C6C0;
+
+  /* Hairlines */
+  --hair:   #E6E1D5;
+  --hair-2: #EFEADF;
+  --hair-strong: #D8D2C4;
+
+  /* Brand */
+  --green:      #0D5A43;
+  --green-2:    #0F6E50;
+  --green-deep: #093B2C;
+  --mint:       #11C988;
+  --mint-2:     #12E29A;
+  --mint-soft:  #D6F2E6;
+  --mint-wash:  #EAF6F0;
+
+  /* Accents (rare) */
+  --gold:   #9A7A3C;
+  --danger: #B4472E;
+  --danger-soft: #F3E2DC;
+  --sky:    #2F6E8F;
+  --plum:   #6A4A7A;
+  --clay:   #B5764A;
+
+  /* Sector palette for charts */
+  --c-fintech:  #0D5A43;
+  --c-ai:       #11C988;
+  --c-infra:    #2F6E8F;
+  --c-bio:      #B5764A;
+  --c-consumer: #9A7A3C;
+  --c-crypto:   #6A4A7A;
+  --c-climate:  #5C7A3C;
+
+  /* Type */
+  --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --sans:  'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono:  'Geist Mono', 'SF Mono', ui-monospace, monospace;
+
+  /* Radii */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+
+  /* Shadow (very restrained, institutional) */
+  --sh-1: 0 1px 2px rgba(20,24,28,0.04), 0 1px 1px rgba(20,24,28,0.03);
+  --sh-2: 0 2px 8px rgba(20,24,28,0.05), 0 1px 2px rgba(20,24,28,0.04);
+  --sh-3: 0 12px 40px -12px rgba(13,40,32,0.18), 0 4px 12px rgba(20,24,28,0.05);
+  --sh-green: 0 14px 44px -16px rgba(13,90,67,0.40);
+
+  /* Layout */
+  --maxw: 1240px;
+  --gutter: 32px;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: var(--sans);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.5;
+  font-feature-settings: 'ss01', 'cv01';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--mint-soft); color: var(--green-deep); }
+
+a { color: inherit; text-decoration: none; }
+
+/* ---------- Typography ---------- */
+.serif { font-family: var(--serif); }
+.mono  { font-family: var(--mono); }
+
+.display {
+  font-family: var(--serif);
+  font-weight: 350;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+  margin: 0;
+}
+.display em { font-style: italic; font-weight: 360; }
+
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.015em; margin: 0; }
+h1 em, h2 em, h3 em { font-style: italic; }
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+.eyebrow.muted { color: var(--muted); }
+
+.lede {
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  font-weight: 400;
+  text-wrap: pretty;
+}
+
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+
+.label-xs {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 500;
+}
+
+/* ---------- Layout ---------- */
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--gutter); }
+.section { padding: 96px 0; }
+.section-tight { padding: 64px 0; }
+
+.divider { height: 1px; background: var(--hair); border: 0; margin: 0; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-family: var(--sans); font-size: 14.5px; font-weight: 500;
+  padding: 11px 18px; border-radius: 999px;
+  border: 1px solid transparent; cursor: pointer;
+  transition: transform .18s cubic-bezier(.2,.7,.3,1), background .18s, box-shadow .18s, border-color .18s, color .18s;
+  white-space: nowrap; line-height: 1;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary {
+  background: var(--green); color: #F4FBF8;
+  box-shadow: var(--sh-green);
+}
+.btn-primary:hover { background: var(--green-2); transform: translateY(-1px); }
+.btn-ghost {
+  background: transparent; color: var(--ink);
+  border-color: var(--hair-strong);
+}
+.btn-ghost:hover { border-color: var(--ink); background: rgba(20,24,28,0.02); }
+.btn-mint { background: var(--mint); color: var(--green-deep); }
+.btn-mint:hover { background: var(--mint-2); }
+.btn-sm { padding: 8px 14px; font-size: 13px; }
+.btn .ico { width: 15px; height: 15px; }
+
+.link-arrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-weight: 500; font-size: 14.5px; color: var(--green);
+}
+.link-arrow svg { transition: transform .2s; }
+.link-arrow:hover svg { transform: translateX(3px); }
+
+/* ---------- Pills / chips ---------- */
+.pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .08em;
+  text-transform: uppercase; font-weight: 500;
+  padding: 5px 10px 5px 9px; border-radius: 999px;
+  border: 1px solid var(--hair-strong); color: var(--ink-2);
+  background: var(--surface);
+}
+.pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 3px var(--mint-wash); }
+.pill.green { border-color: rgba(13,90,67,.22); color: var(--green); background: var(--mint-wash); }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 500; padding: 3px 9px;
+  border-radius: 6px; background: var(--paper-2); color: var(--ink-2);
+  border: 1px solid var(--hair);
+}
+
+/* status dots */
+.sdot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.sdot.live { background: var(--mint); box-shadow: 0 0 0 3px var(--mint-wash); }
+.sdot.warn { background: var(--clay); box-shadow: 0 0 0 3px rgba(181,118,74,.14); }
+.sdot.flat { background: var(--faint); box-shadow: 0 0 0 3px rgba(154,160,167,.14); }
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-1);
+}
+.card-pad { padding: 22px; }
+.card-hover { transition: transform .2s, box-shadow .2s, border-color .2s; }
+.card-hover:hover { transform: translateY(-2px); box-shadow: var(--sh-3); border-color: var(--hair-strong); }
+
+/* metric */
+.metric-k { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.metric-v { font-family: var(--serif); font-weight: 380; letter-spacing: -0.02em; line-height: 1; }
+.delta { font-family: var(--mono); font-size: 12.5px; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; }
+.delta.up { color: var(--green); }
+.delta.down { color: var(--danger); }
+
+/* ---------- Tables ---------- */
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--faint); font-weight: 500;
+  text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--hair);
+}
+.tbl td { padding: 14px; border-bottom: 1px solid var(--hair-2); color: var(--ink-2); vertical-align: middle; }
+.tbl tbody tr { transition: background .15s; }
+.tbl tbody tr:hover { background: var(--paper); }
+.tbl .num { color: var(--ink); }
+.tbl-right { text-align: right; }
+
+/* ---------- Utilities ---------- */
+.row { display: flex; align-items: center; }
+.col { display: flex; flex-direction: column; }
+.between { justify-content: space-between; }
+.center { align-items: center; justify-content: center; }
+.gap-4 { gap: 4px; } .gap-6 { gap: 6px; } .gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; } .gap-16 { gap: 16px; } .gap-20 { gap: 20px; } .gap-24 { gap: 24px; }
+.grow { flex: 1; }
+.mut { color: var(--muted); }
+.faint { color: var(--faint); }
+.green { color: var(--green); }
+.mint { color: var(--mint); }
+.wrap-balance { text-wrap: balance; }
+
+.grid { display: grid; gap: 24px; }
+.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+.hair-top { border-top: 1px solid var(--hair); }
+.hair-bot { border-bottom: 1px solid var(--hair); }
+
+/* fade-in on scroll */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity .8s cubic-bezier(.2,.7,.3,1), transform .8s cubic-bezier(.2,.7,.3,1); }
+.reveal.in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  * { scroll-behavior: auto; }
+}
+
+/* grain / texture overlay helper */
+.grain::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(rgba(20,24,28,0.018) 1px, transparent 1px);
+  background-size: 4px 4px; opacity: .6; mix-blend-mode: multiply;
+}
+
+/* scrollbars in app */
+.scroll-thin::-webkit-scrollbar { width: 9px; height: 9px; }
+.scroll-thin::-webkit-scrollbar-thumb { background: var(--hair-strong); border-radius: 999px; border: 2px solid var(--paper); }
+.scroll-thin::-webkit-scrollbar-track { background: transparent; }
+
+/* chart tooltip (shared by React charts) */
+.chart-tip {
+  position: absolute; pointer-events: none; z-index: 20;
+  background: var(--ink-surface); color: #EAEEF0;
+  border-radius: 8px; padding: 9px 11px; font-size: 12px;
+  box-shadow: 0 10px 30px -8px rgba(0,0,0,.4);
+  transform: translate(-50%, -118%); transition: opacity .12s; white-space: nowrap;
+}
+.chart-tip .tt-k { font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #8A949B; }
+.chart-tip .tt-v { font-family: var(--mono); font-weight: 600; font-size: 13.5px; color: #fff; }
+.chart-tip .tt-row { display: flex; align-items: center; gap: 8px; }
+.chart-tip .tt-sw { width: 8px; height: 8px; border-radius: 2px; }

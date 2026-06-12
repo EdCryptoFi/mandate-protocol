@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Mandate — Deal</title>
+<link rel="stylesheet" href="../assets/theme.css"/>
+<link rel="stylesheet" href="../assets/app.css"/>
+<style>
+.deal-hero { display:flex; align-items:flex-start; gap:18px; margin-bottom:22px; }
+.deal-logo { width:60px; height:60px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-weight:500; font-size:26px; color:#fff; flex-shrink:0; }
+.deal-hero h1 { font-family:var(--serif); font-size:32px; font-weight:440; }
+.term-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:0; border:1px solid var(--hair); border-radius:14px; overflow:hidden; }
+.term { padding:16px 18px; border-left:1px solid var(--hair-2); border-top:1px solid var(--hair-2); }
+.term:nth-child(-n+4){ border-top:0; }
+.term:nth-child(4n+1){ border-left:0; }
+.term .tl { font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+.term .tv { font-family:var(--serif); font-size:22px; font-weight:400; margin-top:6px; letter-spacing:-0.01em; }
+.score-ring { position:relative; width:150px; height:150px; margin:0 auto; }
+.kv { display:flex; justify-content:space-between; padding:11px 0; border-top:1px solid var(--hair-2); font-size:13.5px; }
+.kv:first-child{ border-top:0; }
+.kv .k { color:var(--muted); } .kv .v { font-weight:500; color:var(--ink); font-family:var(--mono); }
+.doc { display:flex; align-items:center; gap:11px; padding:11px 0; border-top:1px solid var(--hair-2); font-size:13.5px; cursor:pointer; }
+.doc:first-child{ border-top:0; }
+.doc:hover .dn { color:var(--green); }
+.doc .di { width:30px; height:30px; border-radius:7px; background:var(--paper-2); display:flex; align-items:center; justify-content:center; color:var(--muted); flex-shrink:0; }
+</style>
+</head>
+<body class="app">
+<div class="app-shell">
+  <aside class="side" id="side"></aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb"><a href="Fund.html" class="c0" style="color:var(--muted)">Portfolio</a><span class="sep">/</span><span class="c1" id="crumb-name">Deal</span></div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm">Pass</button>
+        <button class="btn btn-primary btn-sm">Add to IC agenda</button>
+      </div>
+    </div>
+
+    <div class="content scroll-thin">
+      <div class="content-inner">
+        <a href="Fund.html" class="backlink"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to portfolio</a>
+
+        <div class="deal-hero">
+          <div class="deal-logo" id="deal-logo"></div>
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:12px">
+              <h1 id="deal-name">—</h1>
+              <span class="chip-status live" id="deal-status"><span class="sdot live"></span>On track</span>
+            </div>
+            <div class="mut" id="deal-meta" style="margin-top:6px;font-size:14px"></div>
+            <p id="deal-desc" style="margin-top:12px;max-width:60ch;font-size:15px;color:var(--ink-2);line-height:1.55"></p>
+          </div>
+        </div>
+
+        <!-- terms -->
+        <div class="term-grid" id="term-grid" style="margin-bottom:20px"></div>
+
+        <div class="grid-main">
+          <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+            <div class="panel">
+              <div class="panel-head"><h3>Valuation trajectory</h3><div class="mini-legend"><div class="li"><span class="sw" style="background:#0D5A43"></span>Our stake value</div><div class="li"><span class="sw" style="background:#2F6E8F"></span>Post-money</div></div></div>
+              <div class="panel-body"><div id="ch-value"></div></div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+              <div class="panel">
+                <div class="panel-head"><h3>Cap table</h3><span class="hint">fully diluted</span></div>
+                <div class="panel-body" style="display:flex;flex-direction:column;align-items:center;gap:6px">
+                  <div id="ch-cap"></div>
+                  <div class="mini-legend" id="cap-leg" style="width:100%;flex-direction:column;gap:8px;margin-top:6px"></div>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel-head"><h3>Ownership over rounds</h3><span class="hint">our % stake</span></div>
+                <div class="panel-body"><div id="ch-own"></div></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><h3>Agent diligence</h3><span class="chip-status live"><span class="sdot live"></span>Verified on-chain</span></div>
+              <div class="panel-body">
+                <div style="font-size:13.5px;color:var(--muted);line-height:1.55;margin-bottom:16px" id="agent-memo"></div>
+                <div class="label-xs" style="margin-bottom:10px">Authority checks</div>
+                <div id="deal-checks"></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:20px">
+            <div class="panel">
+              <div class="panel-head"><h3>Conviction score</h3></div>
+              <div class="panel-body">
+                <div class="score-ring" id="score-ring"></div>
+                <div style="text-align:center;font-size:13px;color:var(--muted);margin-top:8px">Composite of thesis fit, traction, team and terms.</div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h3>Key terms</h3></div>
+              <div class="panel-body" id="key-terms" style="padding-top:6px"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h3>Round participants</h3></div>
+              <div class="panel-body" id="participants" style="padding-top:8px"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h3>Data room</h3></div>
+              <div class="panel-body" id="docs" style="padding-top:6px"></div>
+            </div>
+          </div>
+        </div>
+        <div style="height:20px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../assets/data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script type="text/babel" src="../assets/charts-core.jsx"></script>
+<script type="text/babel" src="../assets/charts-extra.jsx"></script>
+<script type="text/babel" data-presets="react">
+const M = window.MANDATE; const sc = M.sectorColors;
+const params = new URLSearchParams(location.search);
+const id = params.get('c') || 'helix';
+const c = M.companies.find(x=>x.id===id) || M.companies[0];
+function initials(n){ return n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
+
+// header
+document.getElementById('crumb-name').textContent = c.name;
+const logo = document.getElementById('deal-logo'); logo.textContent=initials(c.name); logo.style.background=sc[c.sector];
+document.getElementById('deal-name').textContent = c.name;
+document.getElementById('deal-meta').innerHTML = `${c.sector} · ${c.stage} · ${c.geo} · entered ${c.round}`;
+document.getElementById('deal-desc').textContent = c.desc + ' The company sits at the core of the fund thesis on regulated, on-chain financial infrastructure.';
+const st=document.getElementById('deal-status');
+if(c.status!=='live'){ st.className='chip-status watch'; st.innerHTML='<span class="sdot warn"></span>Watch'; }
+
+// terms grid
+const postMoney = Math.round(c.invested / (c.ownership/100));
+const terms = [
+  ['Our investment', `$${c.invested}M`],['Ownership', `${c.ownership}%`],
+  ['Post-money', `$${postMoney}M`],['Current value', `$${c.value}M`],
+  ['Gross MOIC', `${c.moic.toFixed(1)}×`],['IRR', `${c.irr>0?'+':''}${c.irr}%`],
+  ['Stage', c.stage],['Entry', c.round],
+];
+document.getElementById('term-grid').innerHTML = terms.map(t=>`<div class="term"><div class="tl">${t[0]}</div><div class="tv num">${t[1]}</div></div>`).join('');
+
+// valuation trajectory
+const yrs=['Entry','+6m','+1y','+18m','+2y','Now'];
+const stakeStart=c.invested, stakeEnd=c.value;
+const valData = yrs.map((t,i)=>{ const f=Math.pow(i/(yrs.length-1),1.3);
+  return { t, nav: Math.round(stakeStart+(stakeEnd-stakeStart)*f), post: Math.round((stakeStart+(stakeEnd-stakeStart)*f)/(c.ownership/100)) }; });
+ReactDOM.createRoot(document.getElementById('ch-value')).render(
+  <NavChart data={valData} height={260} valueKey="nav" tipLabel="Stake value"
+    series={[{key:'post',label:'Post-money',color:'#2F6E8F',dash:'5 4'}]}/>
+);
+
+// cap table
+const cap = [
+  { label:'Founders', value:42, color:'#0D5A43' },
+  { label:'Mandate', value:c.ownership, color:'#11C988' },
+  { label:'Other VCs', value:Math.max(8, 38-c.ownership), color:'#2F6E8F' },
+  { label:'ESOP', value:12, color:'#9A7A3C' },
+];
+ReactDOM.createRoot(document.getElementById('ch-cap')).render(<DonutChart data={cap} size={150} thickness={22} centerValue={c.ownership+'%'} centerLabel="Our stake"/>);
+const capLeg=document.getElementById('cap-leg');
+const capTot=cap.reduce((s,x)=>s+x.value,0);
+cap.forEach(x=>{ const d=document.createElement('div'); d.className='li'; d.innerHTML=`<span class="sw" style="background:${x.color}"></span>${x.label}<span class="va">${Math.round(x.value/capTot*100)}%</span>`; capLeg.appendChild(d); });
+
+// ownership over rounds (bars)
+const ownData=[{t:'Seed',a:c.ownership+4,b:0},{t:'A',a:c.ownership+2,b:0},{t:'B',a:c.ownership,b:0},{t:'Now',a:c.ownership,b:0}];
+ReactDOM.createRoot(document.getElementById('ch-own')).render(
+  <GroupBars data={ownData} height={240} seriesA={{label:'Ownership',color:'#0D5A43'}} seriesB={{label:'',color:'#11C988'}} yFormat={(v)=>v.toFixed(0)+'%'}/>
+);
+
+// score ring (custom svg)
+const score = c.status==='live' ? Math.min(96, 70+Math.round(c.moic*6)) : 54;
+function ScoreRing({v}){
+  const R=66, r=R-9, C=2*Math.PI*r; const p=Math.min(1,v/100);
+  return (
+    <svg width="150" height="150">
+      <circle cx="75" cy="75" r={r} fill="none" stroke="#ECE8DD" strokeWidth="9"/>
+      <circle cx="75" cy="75" r={r} fill="none" stroke="#0D5A43" strokeWidth="9" strokeLinecap="round"
+        strokeDasharray={`${C*p} ${C}`} transform="rotate(-90 75 75)"/>
+      <text x="75" y="72" textAnchor="middle" fontFamily="var(--serif)" fontSize="38" fill="#14181C">{v}</text>
+      <text x="75" y="92" textAnchor="middle" fontFamily="var(--mono)" fontSize="10" letterSpacing="2" fill="#9AA0A7">/ 100</text>
+    </svg>
+  );
+}
+ReactDOM.createRoot(document.getElementById('score-ring')).render(<ScoreRing v={score}/>);
+
+// key terms
+const kt=[['Security','Preferred (Series '+(c.stage.includes('B')?'B':'A')+')'],['Liquidation','1× non-participating'],['Board','1 seat'],['Pro-rata','Yes'],['Lead','Mandate Fund III']];
+document.getElementById('key-terms').innerHTML = kt.map(t=>`<div class="kv"><span class="k">${t[0]}</span><span class="v">${t[1]}</span></div>`).join('');
+
+// participants
+const parts=[['Mandate Fund III','Lead'],['Atlas Ventures','Co-lead'],['North Star Capital','Follow'],['Founders & angels','—']];
+document.getElementById('participants').innerHTML = parts.map(p=>`<div class="feed-item" style="padding:10px 0"><span class="logo-chip" style="width:28px;height:28px;font-size:11px;background:${p[1]==='Lead'?'#0D5A43':'#9AA0A7'}">${initials(p[0])}</span><div style="flex:1"><div class="ft" style="font-size:13px">${p[0]}</div></div><span class="tag">${p[1]}</span></div>`).join('');
+
+// docs
+const docs=[['Investment memo','PDF · 14p'],['Cap table','XLSX'],['Term sheet','PDF · signed'],['Financial model','XLSX'],['Diligence pack','ZIP · 8 files']];
+document.getElementById('docs').innerHTML = docs.map(d=>`<div class="doc"><div class="di"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M4 2h6l3 3v9H4z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></div><div style="flex:1"><div class="dn" style="font-weight:500;color:var(--ink)">${d[0]}</div></div><span class="meta" style="font-family:var(--mono);font-size:11px;color:var(--faint)">${d[1]}</span></div>`).join('');
+
+// agent memo + checks
+document.getElementById('agent-memo').innerHTML = `The agent scored this position against <strong style="color:var(--ink)">Allocation Policy v4</strong>. Thesis fit is strong; the follow-on draws from reserves within the configured ratio. Every assertion below was checked against the Canton ledger before the transaction settled.`;
+const checks=[
+  { v:'pass', l:'Sector eligibility', d:`${c.sector} is within the Fund Mandate's eligible sectors` },
+  { v:'pass', l:'Single-deal cap', d:`$${c.invested}M ≤ $20M policy ceiling` },
+  { v:'pass', l:'Concentration limit', d:`Position is ${(c.value/1184*100).toFixed(1)}% of NAV — under 12% cap` },
+  { v:'check', l:'Reserve ratio', d:'Follow-on keeps reserves at 29% — under 35%' },
+  { v:'pass', l:'Counterparty', d:'KYC verified · accredited co-investors only' },
+];
+document.getElementById('deal-checks').innerHTML = checks.map(ch=>`<div class="agent-row"><div class="dot-time" style="width:auto;padding-right:4px"><span class="verdict ${ch.v}">${ch.v}</span></div><div class="body"><div style="font-weight:500;color:var(--ink);font-size:13px;margin-bottom:2px">${ch.l}</div><div style="font-size:12px;color:var(--muted);line-height:1.4">${ch.d}</div></div></div>`).join('');
+</script>
+</body>
+</html>

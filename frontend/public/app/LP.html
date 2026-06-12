@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Mandate — Capital &amp; LPs</title>
+<link rel="stylesheet" href="../assets/theme.css"/>
+<link rel="stylesheet" href="../assets/app.css"/>
+<style>
+.call-card { background: linear-gradient(180deg, var(--mint-wash), #fff); border:1px solid rgba(13,90,67,.16); border-radius:14px; padding:18px; }
+.call-amt { font-family:var(--serif); font-size:34px; font-weight:400; letter-spacing:-0.02em; }
+.lp-prog { display:flex; align-items:center; gap:8px; }
+.lp-prog .pbar { flex:1; min-width:70px; }
+.kv2 { display:flex; justify-content:space-between; padding:9px 0; border-top:1px solid var(--hair-2); font-size:13px; }
+.kv2:first-child{border-top:0;} .kv2 .k{color:var(--muted);} .kv2 .v{font-family:var(--mono);font-weight:600;color:var(--ink);}
+</style>
+</head>
+<body class="app">
+<div class="app-shell">
+  <aside class="side" id="side"></aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb"><span class="c0">Mandate Fund III</span><span class="sep">/</span><span class="c1">Capital &amp; LPs</span></div>
+      <div class="topbar-actions">
+        <div class="search"><svg viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Search LPs…</div>
+        <button class="btn btn-primary btn-sm">Issue capital call</button>
+      </div>
+    </div>
+
+    <div class="content scroll-thin">
+      <div class="content-inner">
+        <div class="page-head">
+          <div><h1>Capital &amp; LPs</h1><div class="sub"><strong style="color:var(--ink)">96</strong> limited partners · $640M committed · DPI tracking to 0.44×</div></div>
+        </div>
+
+        <div class="kpi-row" id="kpi-row" style="grid-template-columns:repeat(4,1fr)"></div>
+
+        <div class="grid-main">
+          <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+            <div class="panel">
+              <div class="panel-head"><h3>The J-curve</h3><span class="hint">cumulative net cashflow to LPs ($M)</span></div>
+              <div class="panel-body"><div id="ch-jcurve"></div>
+                <div style="font-size:13px;color:var(--muted);margin-top:6px;line-height:1.5">Fund III crossed breakeven in <strong style="color:var(--green)">2025</strong>. Projected to return <strong style="color:var(--ink)">$640M+</strong> net to LPs by 2028 on current marks.</div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><h3>Calls &amp; distributions</h3><div class="mini-legend"><div class="li"><span class="sw" style="background:#2F6E8F"></span>Called</div><div class="li"><span class="sw" style="background:#11C988"></span>Distributed</div></div></div>
+              <div class="panel-body"><div id="ch-calls"></div></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><h3>Limited partners</h3><span class="hint">by commitment</span></div>
+              <div style="padding:6px 8px 12px">
+                <table class="ptable">
+                  <thead><tr><th>Partner</th><th>Type</th><th class="r">Committed</th><th style="width:130px">Called</th><th class="r">Distributed</th><th class="r">DPI</th></tr></thead>
+                  <tbody id="lp-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:20px">
+            <div class="call-card">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div class="label-xs" style="color:var(--green)">Capital Call #11 · draft</div>
+                <span class="chip-status watch"><span class="sdot warn"></span>Pending</span>
+              </div>
+              <div class="call-amt num" style="margin-top:10px">$28.0M</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:4px">8.9% of remaining commitments · pro-rata across 96 LPs</div>
+              <div class="kv2" style="margin-top:14px"><span class="k">Purpose</span><span class="v">Reserves + 2 new deals</span></div>
+              <div class="kv2"><span class="k">Notice period</span><span class="v">10 days</span></div>
+              <div class="kv2"><span class="k">Settlement</span><span class="v">DVP · atomic</span></div>
+              <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:14px">Review &amp; issue on-chain</button>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><h3>By investor type</h3></div>
+              <div class="panel-body" style="display:flex;flex-direction:column;align-items:center;gap:6px">
+                <div id="ch-type"></div>
+                <div class="mini-legend" id="type-leg" style="width:100%;flex-direction:column;gap:8px;margin-top:6px"></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><h3>Recent activity</h3></div>
+              <div class="panel-body" style="padding-top:6px"><div id="activity-feed"></div></div>
+            </div>
+          </div>
+        </div>
+        <div style="height:20px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../assets/data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script type="text/babel" src="../assets/charts-core.jsx"></script>
+<script type="text/babel" src="../assets/charts-extra.jsx"></script>
+<script type="text/babel" data-presets="react">
+const M = window.MANDATE;
+function initials(n){ return n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
+
+// KPIs
+const kpis=[
+  {k:'Committed', v:'$640M', delta:'96 LPs', up:true, spark:[640,640,640,640], color:'#0D5A43'},
+  {k:'Called', v:'$486M', delta:'76% drawn', up:true, spark:M.navSeries.map(d=>d.called), color:'#2F6E8F'},
+  {k:'Distributed', v:'$214M', delta:'+$22M MTD', up:true, spark:M.navSeries.map(d=>d.dist), color:'#11C988'},
+  {k:'Net DPI', v:'0.44×', delta:'+0.03', up:true, spark:[0,0.05,0.12,0.22,0.31,0.40,0.44], color:'#0D5A43'},
+];
+function Kpi({d}){ return (<div className="kpi"><div className="k">{d.k}</div><div className="v num">{d.v}</div>
+  <div className="foot"><span className="delta up"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M3 5l3-3 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>{d.delta}</span><div style={{width:70}}><Sparkline values={d.spark} width={70} height={26} color={d.color}/></div></div></div>); }
+ReactDOM.createRoot(document.getElementById('kpi-row')).render(<>{kpis.map((d,i)=><Kpi key={i} d={d}/>)}</>);
+
+// J-curve
+ReactDOM.createRoot(document.getElementById('ch-jcurve')).render(<JCurve data={M.jcurve} height={280}/>);
+
+// calls & distributions (stacked-ish grouped)
+const callsData = M.navSeries.map((d,i,arr)=>{ const prev=i?arr[i-1]:{called:0,dist:0};
+  return { t:d.t, a: d.called-(prev.called||0), b: d.dist-(prev.dist||0) }; });
+ReactDOM.createRoot(document.getElementById('ch-calls')).render(
+  <GroupBars data={callsData} height={240} seriesA={{label:'Called',color:'#2F6E8F'}} seriesB={{label:'Distributed',color:'#11C988'}}/>
+);
+
+// LP table
+const lpBody=document.getElementById('lp-body');
+M.lps.forEach(lp=>{ const pct=Math.round(lp.called/lp.committed*100);
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><div class="co"><span class="logo-chip" style="width:30px;height:30px;font-size:12px;background:#0D5A43">${initials(lp.name)}</span><div class="nm">${lp.name}</div></div></td>
+    <td><span class="tag">${lp.type}</span></td>
+    <td class="r num" style="color:var(--ink)">$${lp.committed}M</td>
+    <td><div class="lp-prog"><div class="pbar"><i style="width:${pct}%;background:var(--sky)"></i></div><span class="num" style="font-size:11px;color:var(--muted)">${pct}%</span></div></td>
+    <td class="r num">$${lp.distributed}M</td>
+    <td class="r num" style="color:var(--green);font-weight:600">${lp.dpi.toFixed(2)}×</td>`;
+  lpBody.appendChild(tr);
+});
+
+// by investor type donut
+const types={}; M.lps.forEach(lp=>{ types[lp.type]=(types[lp.type]||0)+lp.committed; });
+const typeColors=['#0D5A43','#11C988','#2F6E8F','#6A4A7A','#B5764A','#9A7A3C','#5C7A3C'];
+const typeData=Object.keys(types).map((t,i)=>({label:t, value:types[t], color:typeColors[i%typeColors.length]}));
+ReactDOM.createRoot(document.getElementById('ch-type')).render(<DonutChart data={typeData} size={150} thickness={22} centerValue="$640M" centerLabel="Committed"/>);
+const tl=document.getElementById('type-leg'); const tTot=typeData.reduce((s,x)=>s+x.value,0);
+typeData.forEach(x=>{ const d=document.createElement('div'); d.className='li'; d.innerHTML=`<span class="sw" style="background:${x.color}"></span>${x.label}<span class="va">$${x.value}M</span>`; tl.appendChild(d); });
+
+// activity
+const icons={call:'↑',invest:'◆',dist:'↓'};
+const af=document.getElementById('activity-feed');
+M.activity.forEach(a=>{ const r=document.createElement('div'); r.className='feed-item';
+  r.innerHTML=`<div class="feed-ico ${a.kind}">${icons[a.kind]}</div><div style="flex:1"><div class="ft">${a.label}</div><div class="fs">${a.sub}</div></div><div class="fd">${a.date}</div>`; af.appendChild(r); });
+</script>
+</body>
+</html>
