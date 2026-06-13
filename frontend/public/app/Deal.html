@@ -39,7 +39,7 @@
     <div class="topbar">
       <div class="crumb"><span class="c0">Mandate Protocol</span><span class="sep">/</span><span class="c1">Agent Sessions & Margin Calls</span></div>
       <div class="topbar-actions">
-        <button class="btn btn-primary btn-sm" onclick="document.getElementById('new-session-panel').scrollIntoView({behavior:'smooth'})">+ Issue New Session</button>
+        <button class="btn btn-primary btn-sm" onclick="document.getElementById('new-session-panel').scrollIntoView({behavior:'smooth'})" data-tip="Opens the session form below — configure permissions, volume caps and duration, then sign the new session onto the Canton ledger.">+ Issue New Session</button>
       </div>
     </div>
 
@@ -115,7 +115,7 @@
               <div style="padding:10px 12px;border-radius:8px;background:rgba(13,90,67,.06);font-size:12px;color:var(--ink-2);margin-bottom:14px">
                 ⓘ Values above are validated against the Institution Mandate on submission. The Canton ledger rejects any session that exceeds the mandate ceiling.
               </div>
-              <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="issueSession()">Sign &amp; Issue Session on Canton</button>
+              <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="issueSession()" data-tip="In production: sends the session parameters to the Canton ledger as a CreateAgentSession command, signed by the Treasury Manager's party key. The ledger validates that all values are within the Operational Mandate before creating the contract.">Sign &amp; Issue Session on Canton</button>
             </div>
 
             <div class="panel">

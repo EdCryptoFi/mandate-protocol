@@ -36,8 +36,8 @@
     <div class="topbar">
       <div class="crumb"><span class="c0">Mandate Protocol</span><span class="sep">/</span><span class="c1">Mandate Configuration</span></div>
       <div class="topbar-actions">
-        <button class="btn btn-ghost btn-sm">Export JSON</button>
-        <button class="btn btn-primary btn-sm">Issue new session</button>
+        <button class="btn btn-ghost btn-sm" data-tip="Exports the full Mandate Config as JSON — for audit records, regulatory submission, or off-chain backup. Requires Compliance Officer + Treasury Manager co-signature to reimport." onclick="alert('In production: downloads the Institution Mandate JSON signed by CEO + CFO, for audit and portability.')">Export JSON</button>
+        <button class="btn btn-primary btn-sm" data-tip="Opens the Agent Session form — issue a new time-limited session token for the AI agent. Requires Treasury Manager signature on Canton." onclick="window.location.href='Deal.html'">Issue new session</button>
       </div>
     </div>
 
