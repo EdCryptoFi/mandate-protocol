@@ -65,9 +65,9 @@
         </div>
 
         <div class="role-tabs">
-          <button class="role-tab active" onclick="setRole('treasury',this)">Treasury Manager</button>
-          <button class="role-tab" onclick="setRole('compliance',this)">Compliance Officer</button>
-          <button class="role-tab" onclick="setRole('regulator',this)">Regulator</button>
+          <button class="role-tab active" onclick="setRole('treasury',this)" data-tip="Pool allocation · volume usage · session limits · agent action feed with AI rationale · simulate margin call · pause/resume agent">Treasury Manager</button>
+          <button class="role-tab" onclick="setRole('compliance',this)" data-tip="Operational Mandate parameters · limit utilization bars · full audit log · emergency halt agent (requires CEO + CFO to resume)">Compliance Officer</button>
+          <button class="role-tab" onclick="setRole('regulator',this)" data-tip="Read-only audit view · every AI decision on-chain · full reasoning visible · pool balances hidden by Canton sub-tx privacy">Regulator</button>
         </div>
 
         <div class="alert-banner" id="alert-banner"></div>

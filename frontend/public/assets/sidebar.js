@@ -16,16 +16,16 @@
 
   const items = [
     { sec: 'Treasury' },
-    { label: 'Overview',        icon: ic.overview,  href: 'Dashboard.html' },
-    { label: 'Collateral Pool', icon: ic.pool,      href: 'Fund.html' },
-    { label: 'Margin Calls',    icon: ic.margin,    href: 'Deal.html', badge: '1' },
+    { label: 'Overview',        icon: ic.overview,  href: 'Dashboard.html', tip: 'Live pool state, agent action feed with AI rationale, volume usage, simulate margin call.' },
+    { label: 'Collateral Pool', icon: ic.pool,      href: 'Fund.html',      tip: '3-layer authority model: Institution → Operational → Agent Session. Daml tests and tech stack.' },
+    { label: 'Margin Calls',    icon: ic.margin,    href: 'Deal.html',      tip: 'Open margin calls, active session details, and issue a new Agent Session.', badge: '1' },
     { sec: 'Governance' },
-    { label: 'Mandate Config',  icon: ic.mandate,   href: 'Fund.html' },
-    { label: 'Agent Sessions',  icon: ic.session,   href: 'Deal.html' },
+    { label: 'Mandate Config',  icon: ic.mandate,   href: 'Fund.html',      tip: 'View and understand all 3 mandate layers — the signed limits the AI agent must stay within.' },
+    { label: 'Agent Sessions',  icon: ic.session,   href: 'Deal.html',      tip: 'Issue, renew, and monitor time-limited session tokens. Sessions expire automatically.' },
     { sec: 'Compliance' },
-    { label: 'Regulator View',  icon: ic.regulator, href: 'LP.html' },
-    { label: 'Audit Trail',     icon: ic.audit,     href: 'LP.html' },
-    { label: 'User Guide',      icon: ic.guide,     href: 'LP.html' },
+    { label: 'Regulator View',  icon: ic.regulator, href: 'LP.html',        tip: 'Read-only audit access. Pool balances are private; every AI decision and rationale is visible.' },
+    { label: 'Audit Trail',     icon: ic.audit,     href: 'LP.html',        tip: 'Immutable on-chain record of every agent action — expandable rows with full AI reasoning.' },
+    { label: 'User Guide',      icon: ic.guide,     href: 'LP.html',        tip: 'Role descriptions, 3-step setup guide, security model, and 12 Daml e2e test results.' },
   ];
 
   const html = `
@@ -39,7 +39,7 @@
     </div>
     ${items.map(it => it.sec
       ? `<div class="side-sec">${it.sec}</div>`
-      : `<a class="nav-item${file === it.href ? ' active' : ''}" href="${it.href}">
+      : `<a class="nav-item${file === it.href ? ' active' : ''}" href="${it.href}"${it.tip ? ` title="${it.tip}"` : ''}>
            <svg viewBox="0 0 24 24" fill="none">${it.icon}</svg>${it.label}
            ${it.badge ? `<span class="badge-n">${it.badge}</span>` : ''}
          </a>`).join('')}
